@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_discover">
+
+    <fragment
+        android:id="@+id/navigation_discover"
+        android:name="com.alfred.kitabalhuda.ui.discover.DiscoverFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_discover" />
+
+    <fragment
+        android:id="@+id/navigation_quran"
+        android:name="com.alfred.kitabalhuda.ui.quran.QuranFragment"
+        android:label="@string/title_quran"
+        tools:layout="@layout/fragment_quran" />
+
+
+    <fragment
+        android:id="@+id/navigation_library"
+        android:name="com.alfred.kitabalhuda.ui.library.LibraryFragment"
+        android:label="@string/title_library"
+        tools:layout="@layout/fragment_library" />
+
+    <activity
+        android:id="@+id/navigation_settings"
+        android:name="com.alfred.kitabalhuda.ui.settings.SettingsActivity"
+        android:label="@string/settings" />
+
+</navigation>

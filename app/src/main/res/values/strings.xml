@@ -1,0 +1,99 @@
+<resources>
+    <string name="app_name">كتاب الهدى</string>
+    <string name="title_home">استكشف</string>
+    <string name="title_search">بحث</string>
+    <string name="title_quran">القرآن الكريم</string>
+    <string name="title_reciters">القراء</string>
+    <string name="title_library">مكتبتي</string>
+    <string name="title_profile">الملف الشخصي</string>
+
+    <string name="welcome_back">مرحباً بعودتك</string>
+    <string name="discover_beauty">اكتشف جمال القرآن</string>
+    <string name="continue_reading">تابع القراءة</string>
+    <string name="featured_reciters">قراء مميزون</string>
+    <string name="hadith_of_the_day">حديث اليوم</string>
+    <string name="loading">جار التحميل...</string>
+    
+    <string name="surah_al_mulk">سورة الملك</string>
+    <string name="ayah_1">الآية 1</string>
+    
+    <!-- Player Strings -->
+    <string name="now_playing">يتم الآن تشغيل</string>
+    <string name="ready_to_play">جاهز للتشغيل</string>
+    <string name="next">التالي</string>
+    <string name="previous">السابق</string>
+    <string name="play">تشغيل</string>
+    <string name="pause">إيقاف</string>
+    <string name="mini_player_title">المشغل المصغر</string>
+    <string name="full_player_title">المشغل الكامل</string>
+    <string name="shuffle">خلط</string>
+    <string name="repeat">تكرار</string>
+    <string name="close">إغلاق</string>
+    <string name="options">خيارات</string>
+    
+    <!-- General -->
+    <string name="settings">الإعدادات</string>
+    <string name="language">اللغة</string>
+    <string name="share">مشاركة</string>
+    <string name="about">حول التطبيق</string>
+    
+    <!-- Settings Strings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="language_settings">إعدادات اللغة</string>
+    <string name="select_language">اختر اللغة</string>
+    <string name="english">English</string>
+    <string name="french">Français</string>
+    <string name="arabic">العربية</string>
+    
+    <!-- Common Actions (Useful generally) -->
+    <string name="cancel">إلغاء</string>
+    <string name="ok_button">موافق</string>
+    <string name="delete_button">حذف</string>
+    <string name="apply">تطبيق</string>
+    <string name="reset">إعادة تعيين</string>
+    <string name="search_hint">بحث...</string>
+    
+    <!-- Error Messages (Useful generally) -->
+    <string name="error_message_format">خطأ: %1$s</string>
+    <string name="an_error_occurred_format">حدث خطأ: %1$s</string>
+    
+    <string name="filters">تصفية</string>
+    <string name="sort">ترتيب</string>
+    <string name="list_view">عرض القائمة</string>
+    <string name="grid_view">عرض الشبكة</string>
+    <string name="mosaic_view">عرض فسيفساء</string>
+    <string name="create_playlist">إنشاء قائمة تشغيل</string>
+    <string name="playlist_name">اسم القائمة</string>
+    <string name="create">إنشاء</string>
+    <string name="no_playlists_yet">لا توجد قوائم تشغيل بعد. أنشئ واحدة!</string>
+    <string name="no_tracks_in_playlist">هذه القائمة فارغة.</string>
+    <string name="add_to_playlist">إضافة إلى القائمة</string>
+    <string name="create_new_playlist">إنشاء قائمة جديدة</string>
+    <string name="play_all">تشغيل الكل</string>
+    <string name="no_history_yet">لا يوجد سجل استماع بعد</string>
+    <string name="repeat_mode">وضع التكرار</string>
+    <string name="shuffle_mode">وضع الخلط</string>
+    <string name="edit_playlist">تعديل القائمة</string>
+    <string name="save">حفظ</string>
+    <string name="description_optional">الوصف (اختياري)</string>
+    <string name="delete_playlist_confirmation">هل أنت متأكد أنك تريد حذف هذه القائمة؟</string>
+    <string name="delete">حذف</string>
+    <string name="sleep_timer">مؤقت النوم</string>
+    <string name="sleep_timer_set">تم ضبط مؤقت النوم لـ %1$d دقيقة</string>
+    <string name="sleep_timer_off">تم إيقاف مؤقت النوم</string>
+    <string name="filter_all">الكل</string>
+    <string name="filter_mecca">مكية</string>
+    <string name="filter_medina">مدنية</string>
+    
+    <string name="tab_downloads">التحميلات</string>
+    <string name="tab_history">السجل</string>
+    <string name="tab_playlists">قوائمي</string>
+    <string name="ayahs_count">آيات</string>
+    <string name="tracks_count">%d مقاطع</string>
+
+    <string name="coming_soon">قريباً</string>
+
+    <!-- Reciter Selection -->
+    <string name="choose_reciter">اختر القارئ</string>
+    <string name="current_reciter">القارئ: %1$s</string>
+</resources>

@@ -1,0 +1,74 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.KitabAlHuda" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary: Teal -->
+        <item name="colorPrimary">@color/huda_teal</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorPrimaryContainer">@color/huda_teal_dark</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+
+        <!-- Secondary: Gold -->
+        <item name="colorSecondary">@color/huda_gold</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondaryContainer">@color/huda_gold_dark</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+
+        <!-- Tertiary: Teal Light -->
+        <item name="colorTertiary">@color/huda_teal_light</item>
+        <item name="colorOnTertiary">@color/black</item>
+        <item name="colorTertiaryContainer">@color/huda_teal_dark</item>
+        <item name="colorOnTertiaryContainer">@color/white</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/black</item>
+        <item name="colorErrorContainer">@color/outline</item>
+        <item name="colorOnErrorContainer">@color/white</item>
+
+        <!-- Background & Surface -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorSurface">@color/surface_elevated</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorSurfaceVariant">@color/outline</item>
+        <item name="colorOnSurfaceVariant">@color/off_white</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/surface_elevated</item>
+        <item name="colorSurfaceInverse">@color/white</item>
+        <item name="colorOnSurfaceInverse">@color/surface_elevated</item>
+        <item name="colorPrimaryInverse">@color/white</item>
+
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/background</item>
+
+        <!-- Text Styles -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.App.Headline2</item>
+    </style>
+
+    <!-- Custom Text Styles -->
+    <style name="TextAppearance.App.Headline1" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="TextAppearance.App.Headline2" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/off_white</item>
+    </style>
+
+    <!-- Bottom Sheet Theme -->
+    <style name="Theme.KitabAlHuda.BottomSheet" parent="Theme.Material3.Dark.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.KitabAlHuda.BottomSheet</item>
+        <item name="android:colorBackground">@color/primary_dark</item>
+    </style>
+
+    <style name="Widget.KitabAlHuda.BottomSheet" parent="Widget.Material3.BottomSheet">
+        <item name="backgroundTint">@color/primary_dark</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.KitabAlHuda.BottomSheet</item>
+    </style>
+
+    <style name="ShapeAppearance.KitabAlHuda.BottomSheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeTopRight">16dp</item>
+    </style>
+</resources>

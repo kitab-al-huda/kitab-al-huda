@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ══════════════════════════════════════ -->
+    <!-- Kitab Al-Huda Color Palette           -->
+    <!-- ══════════════════════════════════════ -->
+
+    <!-- Primary Accent: Teal -->
+    <color name="huda_teal">#03DAC5</color>
+    <color name="huda_teal_dark">#018786</color>
+    <color name="huda_teal_light">#A7FFEB</color>
+
+    <!-- Secondary Accent: Gold -->
+    <color name="huda_gold">#C5A059</color>
+    <color name="huda_gold_dark">#8B6F3A</color>
+
+    <!-- Neutrals -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_800">#2C2C2C</color>
+    <color name="gray_900">#121212</color>
+
+    <!-- Semantic Colors -->
+    <color name="primary_dark">#1A1A1A</color>
+    <color name="primary">#2A2A2A</color>
+    <color name="primary_light">#333333</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#CCCCCC</color>
+    <color name="background">#000000</color>
+    <color name="surface">#1A1A1A</color>
+    <color name="surface_elevated">#221F1F</color>
+    <color name="outline">#564D4D</color>
+    <color name="off_white">#F5F5F1</color>
+
+    <!-- Error -->
+    <color name="error">#CF6679</color>
+</resources>
