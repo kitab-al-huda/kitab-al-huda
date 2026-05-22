@@ -118,10 +118,10 @@
   public static final java.lang.String BUILD_TYPE;
   public static final int VERSION_CODE;
   public static final java.lang.String VERSION_NAME;
-  public static final java.lang.String ENCRYPTION_KEY_PART1;
-  public static final java.lang.String ENCRYPTED_FACEBOOK_BASE_URL;
-  public static final java.lang.String ENCRYPTED_FACEBOOK_PAGE_ID;
-  public static final java.lang.String ENCRYPTED_FACEBOOK_ACCESS_TOKEN;
+  public static final java.lang.String INTERNAL_BUILD_ID;
+  public static final java.lang.String API_ENDPOINT_BASE;
+  public static final java.lang.String API_SERVICE_IDENTIFIER;
+  public static final java.lang.String API_AUTH_SIGNATURE;
 }
 
 # --- UI-related ProGuard Rules for Kitab al-Huda ---

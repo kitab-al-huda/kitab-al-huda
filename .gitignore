@@ -13,7 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
-gradle.properties
+.env
+.venv
 /build
 /local.properties
 .vscode/

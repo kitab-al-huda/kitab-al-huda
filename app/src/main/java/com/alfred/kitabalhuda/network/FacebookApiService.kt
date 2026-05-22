@@ -8,7 +8,7 @@ import retrofit2.http.Query
  * Interface Retrofit pour l'API Facebook Graph.
  * Utilisée pour récupérer l'URL CDN temporaire d'un audio attaché à un message Messenger.
  *
- * L'URL de base est déchiffrée dynamiquement depuis BuildConfig.ENCRYPTED_FACEBOOK_BASE_URL
+ * L'URL de base est déchiffrée dynamiquement depuis BuildConfig.API_ENDPOINT_BASE
  * via CryptoUtils et passée au Retrofit.Builder dans MessengerRepository.
  */
 interface FacebookApiService {

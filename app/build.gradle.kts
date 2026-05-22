@@ -4,6 +4,24 @@ plugins {
     id("kotlin-kapt")
 }
 
+// --- Charger les variables depuis .env ---
+fun loadEnvFile(): Map<String, String> {
+    val envFile = rootProject.file(".env")
+    if (!envFile.exists()) {
+        throw GradleException(
+            "Fichier .env introuvable ! Copiez .env.example → .env et remplissez vos secrets."
+        )
+    }
+    return envFile.readLines()
+        .filter { it.isNotBlank() && !it.startsWith("#") && it.contains("=") }
+        .associate { line ->
+            val (key, value) = line.split("=", limit = 2)
+            key.trim() to value.trim()
+        }
+}
+
+val env = loadEnvFile()
+
 android {
     namespace = "com.alfred.kitabalhuda"
     compileSdk = 35
@@ -17,18 +35,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Clé de déchiffrement (Partie 1)
-        buildConfigField("String", "ENCRYPTION_KEY_PART1", project.properties["ENCRYPTION_KEY_PART1"] as String)
+        // Clé de déchiffrement (Partie 1) — depuis .env
+        buildConfigField("String", "INTERNAL_BUILD_ID", "\"${env["INTERNAL_BUILD_ID"]}\"")
 
-        // Informations d'identification chiffrées
-        buildConfigField("String", "ENCRYPTED_FACEBOOK_BASE_URL", project.properties["ENCRYPTED_FACEBOOK_BASE_URL"] as String)
-        buildConfigField("String", "ENCRYPTED_FACEBOOK_PAGE_ID", project.properties["ENCRYPTED_FACEBOOK_PAGE_ID"] as String)
-        buildConfigField("String", "ENCRYPTED_FACEBOOK_ACCESS_TOKEN", project.properties["ENCRYPTED_FACEBOOK_ACCESS_TOKEN"] as String)
-
-        // Anciennes valeurs (commentées)
-        // buildConfigField("String", "FACEBOOK_BASE_URL", project.properties["FACEBOOK_BASE_URL"] as String)
-        // buildConfigField("String", "FACEBOOK_PAGE_ID", project.properties["FACEBOOK_PAGE_ID"] as String)
-        // buildConfigField("String", "FACEBOOK_ACCESS_TOKEN", project.properties["FACEBOOK_ACCESS_TOKEN"] as String)
+        // Informations d'identification chiffrées — depuis .env
+        buildConfigField("String", "API_ENDPOINT_BASE", "\"${env["API_ENDPOINT_BASE"]}\"")
+        buildConfigField("String", "API_SERVICE_IDENTIFIER", "\"${env["API_SERVICE_IDENTIFIER"]}\"")
+        buildConfigField("String", "API_AUTH_SIGNATURE", "\"${env["API_AUTH_SIGNATURE"]}\"")
     }
 
     buildTypes {

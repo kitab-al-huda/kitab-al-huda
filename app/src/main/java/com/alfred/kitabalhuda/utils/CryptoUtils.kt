@@ -10,11 +10,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * Utilitaire de déchiffrement AES-256-CBC pour les valeurs chiffrées stockées dans BuildConfig.
- * La clé est composée de deux parties :
- * - ENCRYPTION_KEY_PART1 (BuildConfig / gradle.properties)
- * - encryption_key_part2 (strings.xml)
- * Combinées et hashées en SHA-256 pour obtenir une clé AES-256.
+ * Utilitaire interne pour le chargement sécurisé des ressources chiffrées de l'application.
  */
 object CryptoUtils {
 
@@ -35,8 +31,8 @@ object CryptoUtils {
     private fun getOrCreateKey(context: Context): SecretKeySpec {
         cachedKey?.let { return it }
 
-        val part1 = BuildConfig.ENCRYPTION_KEY_PART1
-        val part2 = context.getString(R.string.encryption_key_part2)
+        val part1 = BuildConfig.INTERNAL_BUILD_ID
+        val part2 = context.getString(R.string.app_build_signature)
         val fullKey = part1 + part2
 
         val keyBytes = MessageDigest.getInstance("SHA-256").digest(fullKey.toByteArray(Charsets.UTF_8))

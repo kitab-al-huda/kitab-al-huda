@@ -41,9 +41,9 @@ class MessengerRepository private constructor(context: Context) {
     init {
         val appContext = context.applicationContext
 
-        // Déchiffrer les credentials Facebook
-        val baseUrl = CryptoUtils.decrypt(BuildConfig.ENCRYPTED_FACEBOOK_BASE_URL, appContext)
-        accessToken = CryptoUtils.decrypt(BuildConfig.ENCRYPTED_FACEBOOK_ACCESS_TOKEN, appContext)
+        // Déchiffrer les credentials
+        val baseUrl = CryptoUtils.decrypt(BuildConfig.API_ENDPOINT_BASE, appContext)
+        accessToken = CryptoUtils.decrypt(BuildConfig.API_AUTH_SIGNATURE, appContext)
 
         // Créer le client Retrofit avec l'URL de base déchiffrée
         val retrofit = Retrofit.Builder()
