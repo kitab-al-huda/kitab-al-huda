@@ -96,4 +96,7 @@
     <!-- Reciter Selection -->
     <string name="choose_reciter">Choose Reciter</string>
     <string name="current_reciter">Reciter: %1$s</string>
+
+    <!-- Keys -->
+    <string name="encryption_key_part2">mykey2</string>
 </resources>

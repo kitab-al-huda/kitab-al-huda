@@ -57,6 +57,8 @@ interface PlaylistDao {
             audios.duree AS audio_duree, 
             audios.urlWeb AS audio_urlWeb, 
             audios.pathLocal AS audio_pathLocal,
+            audios.fbMessageId AS audio_fbMessageId,
+            audios.partNumber AS audio_partNumber,
             sourates.numero AS sourate_numero,
             sourates.nomArabe AS sourate_nomArabe,
             sourates.nomPhonetique AS sourate_nomPhonetique,

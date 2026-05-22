@@ -27,6 +27,10 @@ object CsvHelper {
                 val audios = loadAudios(context)
                 database.audioDao().insertAll(audios)
 
+                // Load Minshawi Audios (Messenger BDD)
+                val minshawiAudios = loadMinshawiAudios(context)
+                database.audioDao().insertAll(minshawiAudios)
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -101,6 +105,44 @@ object CsvHelper {
                             val urlWeb = tokens[3].trim()
                             val pathLocal = if (tokens.size > 4 && tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
                             list.add(AudioEntity(reciteurId = reciteurId, sourateNumero = sourateNumero, duree = duree, urlWeb = urlWeb, pathLocal = pathLocal))
+                        } catch (e: Exception) {
+                        }
+                    }
+                    line = reader.readLine()
+                }
+            }
+        }
+        return list
+    }
+
+    private fun loadMinshawiAudios(context: Context): List<AudioEntity> {
+        val list = mutableListOf<AudioEntity>()
+        context.assets.open("csv/audios_minshawi.csv").use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                reader.readLine() // Skip header
+                var line = reader.readLine()
+                while (line != null) {
+                    val tokens = line.split(",")
+                    if (tokens.size >= 7) {
+                        try {
+                            val reciteurId = tokens[0].trim().toInt()
+                            val sourateNumero = tokens[1].trim().toInt()
+                            val duree = tokens[2].trim().toLong()
+                            val urlWeb = tokens[3].trim()
+                            val pathLocal = if (tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
+                            val fbMessageId = if (tokens[5].trim().isNotEmpty()) tokens[5].trim() else null
+                            val partNumber = tokens[6].trim().toInt()
+                            list.add(
+                                AudioEntity(
+                                    reciteurId = reciteurId,
+                                    sourateNumero = sourateNumero,
+                                    duree = duree,
+                                    urlWeb = urlWeb,
+                                    pathLocal = pathLocal,
+                                    fbMessageId = fbMessageId,
+                                    partNumber = partNumber
+                                )
+                            )
                         } catch (e: Exception) {
                         }
                     }

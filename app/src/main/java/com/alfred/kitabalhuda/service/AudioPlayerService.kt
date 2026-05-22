@@ -1,30 +1,41 @@
 package com.alfred.kitabalhuda.service
 
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import com.alfred.kitabalhuda.repository.MessengerRepository
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.guava.future
 
 class AudioPlayerService : MediaLibraryService() {
 
     private lateinit var player: ExoPlayer
     private lateinit var mediaSession: MediaLibrarySession
+    private lateinit var messengerRepository: MessengerRepository
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var sleepTimerRunnable: Runnable? = null
 
     companion object {
+        private const val TAG = "AudioPlayerService"
         const val COMMAND_START_SLEEP_TIMER = "START_SLEEP_TIMER"
         const val COMMAND_STOP_SLEEP_TIMER = "STOP_SLEEP_TIMER"
         const val EXTRA_MINUTES = "EXTRA_MINUTES"
+        const val MESSENGER_URI_SCHEME = "messenger://"
     }
 
     override fun onCreate() {
         super.onCreate()
         player = ExoPlayer.Builder(this).build()
+        messengerRepository = MessengerRepository.getInstance(this)
         
         mediaSession = MediaLibrarySession.Builder(this, player, LibrarySessionCallback()).build()
     }
@@ -111,8 +122,25 @@ class AudioPlayerService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
-            val updatedMediaItems = mediaItems.map { it.buildUpon().setUri(it.mediaId).build() }.toMutableList()
-            return Futures.immediateFuture(updatedMediaItems)
+            // Resolve messenger:// URIs to CDN URLs asynchronously
+            return serviceScope.future {
+                mediaItems.map { item ->
+                    val mediaId = item.mediaId
+                    if (mediaId.startsWith(MESSENGER_URI_SCHEME)) {
+                        val messageId = mediaId.removePrefix(MESSENGER_URI_SCHEME)
+                        val cdnUrl = messengerRepository.resolveAudioUrl(messageId)
+                        if (cdnUrl != null) {
+                            Log.d(TAG, "Resolved messenger URI to CDN: ${cdnUrl.take(80)}...")
+                            item.buildUpon().setUri(cdnUrl).build()
+                        } else {
+                            Log.w(TAG, "Failed to resolve messenger URI for: $messageId")
+                            item.buildUpon().setUri(mediaId).build()
+                        }
+                    } else {
+                        item.buildUpon().setUri(mediaId).build()
+                    }
+                }.toMutableList()
+            }
         }
     }
 }

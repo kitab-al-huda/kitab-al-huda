@@ -11,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.alfred.kitabalhuda.KitabAlHudaApplication
+import com.alfred.kitabalhuda.database.entity.AudioEntity
 import com.alfred.kitabalhuda.repository.AudioRepository
 import com.alfred.kitabalhuda.service.AudioPlayerService
 import com.google.common.util.concurrent.ListenableFuture
@@ -72,6 +73,19 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Construit l'URI de lecture pour un AudioEntity.
+     * Si l'audio a un fbMessageId, on utilise le schéma messenger://
+     * qui sera résolu par AudioPlayerService en URL CDN temporaire.
+     */
+    private fun buildMediaUri(audio: AudioEntity): String {
+        return if (!audio.fbMessageId.isNullOrEmpty()) {
+            "${AudioPlayerService.MESSENGER_URI_SCHEME}${audio.fbMessageId}"
+        } else {
+            audio.urlWeb
+        }
+    }
+
     fun playSurah(surahNumber: Int, surahName: String) {
         val controller = player.value ?: return
 
@@ -90,12 +104,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             if (allAudios.isNotEmpty() && allSourates.isNotEmpty()) {
                 val mediaItems = allAudios.map { audio ->
                     val sourate = allSourates.find { it.numero == audio.sourateNumero }
-                    val name = sourate?.nomArabe ?: "سورة"
-                    val uri = android.net.Uri.parse(audio.urlWeb)
+                    val name = if (audio.partNumber > 1) {
+                        "${sourate?.nomArabe ?: "سورة"} (${audio.partNumber})"
+                    } else {
+                        sourate?.nomArabe ?: "سورة"
+                    }
+                    val mediaUri = buildMediaUri(audio)
                     
                     MediaItem.Builder()
-                        .setMediaId(audio.urlWeb)
-                        .setUri(uri)
+                        .setMediaId(mediaUri)
+                        .setUri(android.net.Uri.parse(mediaUri))
                         .setMediaMetadata(
                             androidx.media3.common.MediaMetadata.Builder()
                                 .setTitle(name)
@@ -138,12 +156,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             if (allAudios.isNotEmpty() && allSourates.isNotEmpty()) {
                 val mediaItems = allAudios.map { audio ->
                     val sourate = allSourates.find { it.numero == audio.sourateNumero }
-                    val name = sourate?.nomArabe ?: "سورة"
-                    val uri = android.net.Uri.parse(audio.urlWeb)
+                    val name = if (audio.partNumber > 1) {
+                        "${sourate?.nomArabe ?: "سورة"} (${audio.partNumber})"
+                    } else {
+                        sourate?.nomArabe ?: "سورة"
+                    }
+                    val mediaUri = buildMediaUri(audio)
                     
                     MediaItem.Builder()
-                        .setMediaId(audio.urlWeb)
-                        .setUri(uri)
+                        .setMediaId(mediaUri)
+                        .setUri(android.net.Uri.parse(mediaUri))
                         .setMediaMetadata(
                             androidx.media3.common.MediaMetadata.Builder()
                                 .setTitle(name)
@@ -190,10 +212,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
             
             val mediaItems = tracks.map { track ->
-                val uri = android.net.Uri.parse(track.audio.urlWeb)
+                val mediaUri = buildMediaUri(track.audio)
                 MediaItem.Builder()
-                    .setMediaId(track.audio.urlWeb)
-                    .setUri(uri)
+                    .setMediaId(mediaUri)
+                    .setUri(android.net.Uri.parse(mediaUri))
                     .setMediaMetadata(
                         androidx.media3.common.MediaMetadata.Builder()
                             .setTitle(track.sourate.nomPhonetique)

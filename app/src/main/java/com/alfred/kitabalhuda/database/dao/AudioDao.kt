@@ -23,4 +23,7 @@ interface AudioDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(audios: List<AudioEntity>)
+
+    @Query("SELECT * FROM audios WHERE reciteurId = :reciteurId AND sourateNumero = :sourateNumber ORDER BY partNumber ASC")
+    suspend fun getAudioPartsForSurah(reciteurId: Int, sourateNumber: Int): List<AudioEntity>
 }

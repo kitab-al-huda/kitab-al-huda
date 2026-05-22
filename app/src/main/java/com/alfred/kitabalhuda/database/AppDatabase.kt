@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
         PlaylistItemEntity::class,
         ListeningHistoryEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -44,7 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "kitab_alhuda_database" // Renamed database
                 )
-                    .addMigrations(MIGRATION_5_6)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                     .fallbackToDestructiveMigration() // Only for versions we don't have migrations for
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
@@ -71,6 +71,15 @@ abstract class AppDatabase : RoomDatabase() {
                 """)
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_listening_history_audioId ON listening_history(audioId)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_listening_history_timestamp ON listening_history(timestamp)")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : androidx.room.migration.Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add Messenger message ID column for zero-rated audio streaming
+                database.execSQL("ALTER TABLE audios ADD COLUMN fbMessageId TEXT DEFAULT NULL")
+                // Add part number column for multi-part surahs
+                database.execSQL("ALTER TABLE audios ADD COLUMN partNumber INTEGER NOT NULL DEFAULT 1")
             }
         }
     }

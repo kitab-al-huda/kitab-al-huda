@@ -41,5 +41,11 @@ data class AudioEntity(
     val urlWeb: String,
 
     @SerializedName("pathLocal")
-    val pathLocal: String? = null
+    val pathLocal: String? = null,
+
+    @SerializedName("fbMessageId")
+    val fbMessageId: String? = null,
+
+    @SerializedName("partNumber")
+    val partNumber: Int = 1
 )
