@@ -36,16 +36,25 @@ class PlaylistRepository(private val playlistDao: PlaylistDao) {
     }
 
     suspend fun addAudioToPlaylist(playlistId: Int, audioId: Long) {
+        addAudioPartsToPlaylist(playlistId, listOf(audioId))
+    }
+
+    /**
+     * Inserts all parts of a surah into a playlist in order.
+     * Calling this with a single-element list works the same as addAudioToPlaylist.
+     */
+    suspend fun addAudioPartsToPlaylist(playlistId: Int, audioIds: List<Long>) {
         withContext(Dispatchers.IO) {
             val maxOrder = playlistDao.getMaxOrderForPlaylist(playlistId) ?: -1
-            val newOrder = maxOrder + 1
-            
-             val item = PlaylistItemEntity(
-                playlistId = playlistId,
-                audioId = audioId,
-                orderIndex = newOrder
-            )
-            playlistDao.addPlaylistItem(item)
+            audioIds.forEachIndexed { index, audioId ->
+                playlistDao.addPlaylistItem(
+                    PlaylistItemEntity(
+                        playlistId = playlistId,
+                        audioId = audioId,
+                        orderIndex = maxOrder + 1 + index
+                    )
+                )
+            }
         }
     }
 

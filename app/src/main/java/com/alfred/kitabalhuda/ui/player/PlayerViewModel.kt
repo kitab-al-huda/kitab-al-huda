@@ -86,6 +86,70 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Builds a human-readable title for a track.
+     * - Single part  : "البقرة"
+     * - Multi-part   : "البقرة — الجزء 2/5"
+     */
+    private fun buildTrackTitle(surahName: String?, partNumber: Int, totalParts: Int): String {
+        val name = surahName ?: "سورة"
+        return if (totalParts > 1) "$name — الجزء $partNumber/$totalParts" else name
+    }
+
+    /**
+     * Pre-computes cumulative start offsets and total durations per surah.
+     * Returns a pair of:
+     *   - Map<audioId, cumulativeStartMs>  — offset of this part in the combined timeline
+     *   - Map<sourateNumero, surahTotalMs> — total duration of the full surah
+     */
+    private fun buildCumulativeMaps(
+        audios: List<AudioEntity>
+    ): Pair<Map<Long, Long>, Map<Int, Long>> {
+        val cumulativeStartMap = mutableMapOf<Long, Long>()
+        val surahTotalMap = mutableMapOf<Int, Long>()
+        for ((surateNo, parts) in audios.groupBy { it.sourateNumero }) {
+            var cumulative = 0L
+            for (part in parts.sortedBy { it.partNumber }) {
+                cumulativeStartMap[part.id] = cumulative
+                cumulative += part.duree
+            }
+            surahTotalMap[surateNo] = cumulative
+        }
+        return Pair(cumulativeStartMap, surahTotalMap)
+    }
+
+    /** Build a [MediaItem] with all the extra metadata the UI needs. */
+    private fun buildMediaItem(
+        audio: AudioEntity,
+        title: String,
+        artist: String,
+        totalParts: Int,
+        cumulativeStartMs: Long,
+        surahTotalMs: Long
+    ): MediaItem {
+        val extras = android.os.Bundle().apply {
+            putInt("sourateNumero", audio.sourateNumero)
+            putInt("partNumber", audio.partNumber)
+            putInt("totalParts", totalParts)
+            putLong("cumulativeStartMs", cumulativeStartMs)
+            putLong("surahTotalMs", surahTotalMs)
+            putLong("partDurationMs", audio.duree)
+        }
+        val mediaUri = buildMediaUri(audio)
+        return MediaItem.Builder()
+            .setMediaId(mediaUri)
+            .setUri(android.net.Uri.parse(mediaUri))
+            .setMediaMetadata(
+                androidx.media3.common.MediaMetadata.Builder()
+                    .setTitle(title)
+                    .setArtist(artist)
+                    .setExtras(extras)
+                    .build()
+            )
+            .build()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
     fun playSurah(surahNumber: Int, surahName: String) {
         val controller = player.value ?: return
 
@@ -93,7 +157,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             val context = getApplication<Application>()
             val reciteurId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(context)
             val reciterName = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterName(context)
-            
+
             val database = (context as KitabAlHudaApplication).database
             val audioDao = database.audioDao()
             val sourateDao = database.sourateDao()
@@ -102,33 +166,27 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             val allAudios = withContext(Dispatchers.IO) { audioDao.getAudiosByReciteurDirect(reciteurId) }
 
             if (allAudios.isNotEmpty() && allSourates.isNotEmpty()) {
+                val partCounts = allAudios.groupBy { it.sourateNumero }
+                    .mapValues { (_, parts) -> parts.size }
+                val (cumulativeStartMap, surahTotalMap) = buildCumulativeMaps(allAudios)
+
                 val mediaItems = allAudios.map { audio ->
                     val sourate = allSourates.find { it.numero == audio.sourateNumero }
-                    val name = if (audio.partNumber > 1) {
-                        "${sourate?.nomArabe ?: "سورة"} (${audio.partNumber})"
-                    } else {
-                        sourate?.nomArabe ?: "سورة"
-                    }
-                    val mediaUri = buildMediaUri(audio)
-                    
-                    MediaItem.Builder()
-                        .setMediaId(mediaUri)
-                        .setUri(android.net.Uri.parse(mediaUri))
-                        .setMediaMetadata(
-                            androidx.media3.common.MediaMetadata.Builder()
-                                .setTitle(name)
-                                .setArtist(reciterName)
-                                .build()
-                        )
-                        .build()
+                    val totalParts = partCounts[audio.sourateNumero] ?: 1
+                    buildMediaItem(
+                        audio = audio,
+                        title = buildTrackTitle(sourate?.nomArabe, audio.partNumber, totalParts),
+                        artist = reciterName,
+                        totalParts = totalParts,
+                        cumulativeStartMs = cumulativeStartMap[audio.id] ?: 0L,
+                        surahTotalMs = surahTotalMap[audio.sourateNumero] ?: audio.duree
+                    )
                 }
 
                 val startIndex = allAudios.indexOfFirst { it.sourateNumero == surahNumber }.coerceAtLeast(0)
-
-                val selectedAudio = allAudios.getOrNull(startIndex)
-                if (selectedAudio != null) {
+                allAudios.getOrNull(startIndex)?.let { audio ->
                     historyDao.addToHistory(
-                        com.alfred.kitabalhuda.database.entity.ListeningHistoryEntity(audioId = selectedAudio.id)
+                        com.alfred.kitabalhuda.database.entity.ListeningHistoryEntity(audioId = audio.id)
                     )
                 }
 
@@ -140,7 +198,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
-    
+
+    @Suppress("UNUSED_PARAMETER")
     fun playSurahWithReciter(surahNumber: Int, surahName: String, reciterId: Int, reciterName: String) {
         val controller = player.value ?: return
 
@@ -154,33 +213,27 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             val allAudios = withContext(Dispatchers.IO) { audioDao.getAudiosByReciteurDirect(reciterId) }
 
             if (allAudios.isNotEmpty() && allSourates.isNotEmpty()) {
+                val partCounts = allAudios.groupBy { it.sourateNumero }
+                    .mapValues { (_, parts) -> parts.size }
+                val (cumulativeStartMap, surahTotalMap) = buildCumulativeMaps(allAudios)
+
                 val mediaItems = allAudios.map { audio ->
                     val sourate = allSourates.find { it.numero == audio.sourateNumero }
-                    val name = if (audio.partNumber > 1) {
-                        "${sourate?.nomArabe ?: "سورة"} (${audio.partNumber})"
-                    } else {
-                        sourate?.nomArabe ?: "سورة"
-                    }
-                    val mediaUri = buildMediaUri(audio)
-                    
-                    MediaItem.Builder()
-                        .setMediaId(mediaUri)
-                        .setUri(android.net.Uri.parse(mediaUri))
-                        .setMediaMetadata(
-                            androidx.media3.common.MediaMetadata.Builder()
-                                .setTitle(name)
-                                .setArtist(reciterName)
-                                .build()
-                        )
-                        .build()
+                    val totalParts = partCounts[audio.sourateNumero] ?: 1
+                    buildMediaItem(
+                        audio = audio,
+                        title = buildTrackTitle(sourate?.nomArabe, audio.partNumber, totalParts),
+                        artist = reciterName,
+                        totalParts = totalParts,
+                        cumulativeStartMs = cumulativeStartMap[audio.id] ?: 0L,
+                        surahTotalMs = surahTotalMap[audio.sourateNumero] ?: audio.duree
+                    )
                 }
 
                 val startIndex = allAudios.indexOfFirst { it.sourateNumero == surahNumber }.coerceAtLeast(0)
-
-                val selectedAudio = allAudios.getOrNull(startIndex)
-                if (selectedAudio != null) {
+                allAudios.getOrNull(startIndex)?.let { audio ->
                     historyDao.addToHistory(
-                        com.alfred.kitabalhuda.database.entity.ListeningHistoryEntity(audioId = selectedAudio.id)
+                        com.alfred.kitabalhuda.database.entity.ListeningHistoryEntity(audioId = audio.id)
                     )
                 }
 
@@ -192,17 +245,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
-    
+
     fun playPlaylist(tracks: List<com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistTrack>, startIndex: Int = 0) {
         val controller = player.value ?: return
-        
+
         if (tracks.isEmpty()) {
             android.util.Log.e("PlayerViewModel", "Playlist is empty")
             return
         }
-        
+
         viewModelScope.launch {
-            // Add first track to history
             if (startIndex < tracks.size) {
                 historyDao.addToHistory(
                     com.alfred.kitabalhuda.database.entity.ListeningHistoryEntity(
@@ -210,21 +262,43 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 )
             }
-            
-            val mediaItems = tracks.map { track ->
-                val mediaUri = buildMediaUri(track.audio)
-                MediaItem.Builder()
-                    .setMediaId(mediaUri)
-                    .setUri(android.net.Uri.parse(mediaUri))
-                    .setMediaMetadata(
-                        androidx.media3.common.MediaMetadata.Builder()
-                            .setTitle(track.sourate.nomPhonetique)
-                            .setArtist(track.reciteur.nom)
-                            .build()
-                    )
-                    .build()
+
+            val audioEntities = tracks.map { it.audio }
+
+            // Group by (sourateNumero, reciteurId) so playlists that mix different reciters
+            // for the same surah don't pollute each other's part counts / cumulative offsets.
+            val groupKey: (com.alfred.kitabalhuda.database.entity.AudioEntity) -> Pair<Int, Int> =
+                { audio -> Pair(audio.sourateNumero, audio.reciteurId) }
+
+            val partCountsByKey = audioEntities
+                .groupBy(groupKey)
+                .mapValues { (_, parts) -> parts.size }
+
+            // Build cumulative start offsets for each part within its (sourate, reciter) group
+            val cumulativeStartMap = mutableMapOf<Long, Long>()
+            val surahTotalByKey = mutableMapOf<Pair<Int, Int>, Long>()
+            for ((key, parts) in audioEntities.groupBy(groupKey)) {
+                var cumulative = 0L
+                for (part in parts.sortedBy { it.partNumber }) {
+                    cumulativeStartMap[part.id] = cumulative
+                    cumulative += part.duree
+                }
+                surahTotalByKey[key] = cumulative
             }
-            
+
+            val mediaItems = tracks.map { track ->
+                val key = groupKey(track.audio)
+                val totalParts = partCountsByKey[key] ?: 1
+                buildMediaItem(
+                    audio = track.audio,
+                    title = buildTrackTitle(track.sourate.nomPhonetique, track.audio.partNumber, totalParts),
+                    artist = track.reciteur.nom,
+                    totalParts = totalParts,
+                    cumulativeStartMs = cumulativeStartMap[track.audio.id] ?: 0L,
+                    surahTotalMs = surahTotalByKey[key] ?: track.audio.duree
+                )
+            }
+
             controller.setMediaItems(mediaItems, startIndex, 0)
             controller.prepare()
             controller.play()

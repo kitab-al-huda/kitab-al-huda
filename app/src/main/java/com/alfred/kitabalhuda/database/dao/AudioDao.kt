@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AudioDao {
-    @Query("SELECT * FROM audios WHERE reciteurId = :reciteurId ORDER BY sourateNumero ASC")
+    @Query("SELECT * FROM audios WHERE reciteurId = :reciteurId ORDER BY sourateNumero ASC, partNumber ASC")
     fun getAudiosByReciteur(reciteurId: Int): Flow<List<AudioEntity>>
 
-    @Query("SELECT * FROM audios WHERE reciteurId = :reciteurId ORDER BY sourateNumero ASC")
+    @Query("SELECT * FROM audios WHERE reciteurId = :reciteurId ORDER BY sourateNumero ASC, partNumber ASC")
     suspend fun getAudiosByReciteurDirect(reciteurId: Int): List<AudioEntity>
 
     @Query("SELECT * FROM audios WHERE sourateNumero = :sourateId")

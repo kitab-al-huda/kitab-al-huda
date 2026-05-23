@@ -10,6 +10,7 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentFullPlayerBinding
@@ -21,12 +22,20 @@ class FullPlayerFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: PlayerViewModel
     private val handler = Handler(Looper.getMainLooper())
+
+    /** Tracks the currently displayed sourateNumero to detect real surah changes. */
+    private var lastSurateNumero: Int = -1
+
     private val updateProgressAction = object : Runnable {
         override fun run() {
             updateProgress()
-            handler.postDelayed(this, 1000)
+            handler.postDelayed(this, 500)
         }
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Lifecycle
+    // ──────────────────────────────────────────────────────────────────────
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,10 +49,19 @@ class FullPlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
-
         setupUI()
         observeViewModel()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        handler.removeCallbacks(updateProgressAction)
+        _binding = null
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // UI setup
+    // ──────────────────────────────────────────────────────────────────────
 
     private fun setupUI() {
         binding.btnCollapse.setOnClickListener {
@@ -52,35 +70,32 @@ class FullPlayerFragment : Fragment() {
 
         binding.btnFullPlay.setOnClickListener {
             viewModel.player.value?.let { player ->
-                if (player.isPlaying) {
-                    player.pause()
-                } else {
-                    player.play()
-                }
+                if (player.isPlaying) player.pause() else player.play()
             }
         }
 
+        // Navigate to the first part of the NEXT surah
         binding.btnFullNext.setOnClickListener {
-            viewModel.player.value?.seekToNext()
+            viewModel.player.value?.let { seekToNextSurah(it) }
         }
 
+        // Navigate to the first part of the PREVIOUS surah
         binding.btnFullPrev.setOnClickListener {
-            viewModel.player.value?.seekToPrevious()
+            viewModel.player.value?.let { seekToPrevSurah(it) }
         }
 
         binding.btnRepeatMode.setOnClickListener {
             val currentMode = viewModel.playbackMode.value ?: PlaybackMode.SEQUENTIAL
-            // Cycle through: SEQUENTIAL → REPEAT_ALL → REPEAT_ONE → PLAY_CURRENT_AND_STOP → SEQUENTIAL
             val newMode = when (currentMode) {
-                PlaybackMode.SEQUENTIAL -> PlaybackMode.REPEAT_ALL
-                PlaybackMode.REPEAT_ALL -> PlaybackMode.REPEAT_ONE
-                PlaybackMode.REPEAT_ONE -> PlaybackMode.PLAY_CURRENT_AND_STOP
+                PlaybackMode.SEQUENTIAL       -> PlaybackMode.REPEAT_ALL
+                PlaybackMode.REPEAT_ALL       -> PlaybackMode.REPEAT_ONE
+                PlaybackMode.REPEAT_ONE       -> PlaybackMode.PLAY_CURRENT_AND_STOP
                 PlaybackMode.PLAY_CURRENT_AND_STOP -> PlaybackMode.SEQUENTIAL
             }
             viewModel.setPlaybackMode(newMode)
             updateRepeatModeButton(newMode)
         }
-        
+
         binding.btnShuffle.setOnClickListener {
             viewModel.player.value?.let { player ->
                 player.shuffleModeEnabled = !player.shuffleModeEnabled
@@ -105,25 +120,14 @@ class FullPlayerFragment : Fragment() {
         binding.btnChangeReciter.setOnClickListener {
             val sheet = com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.newInstance()
             sheet.onReciterSelected = { reciter ->
-                // Replay current surah with the new reciter
                 viewModel.player.value?.let { player ->
                     val currentTitle = player.mediaMetadata.title?.toString()
                     if (currentTitle != null) {
-                        // Save as new default
                         com.alfred.kitabalhuda.util.ReciterPreferences.setSelectedReciter(
                             requireContext(), reciter.id, reciter.nom
                         )
-                        // Get current surah number from media metadata extras or replay by name
-                        viewModel.player.value?.let { p ->
-                            val surahName = p.mediaMetadata.title?.toString() ?: return@let
-                            viewModel.playSurahWithReciter(
-                                // Try to determine surah number — for now use position+1 as fallback
-                                p.currentMediaItemIndex + 1,
-                                surahName,
-                                reciter.id,
-                                reciter.nom
-                            )
-                        }
+                        val surahNo = getCurrentExtras(player)?.getInt("sourateNumero", 1) ?: 1
+                        viewModel.playSurahWithReciter(surahNo, currentTitle, reciter.id, reciter.nom)
                     }
                 }
             }
@@ -133,7 +137,7 @@ class FullPlayerFragment : Fragment() {
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    binding.textPosition.text = formatTime(progress.toLong())
+                    _binding?.textPosition?.text = formatTime(progress.toLong())
                 }
             }
 
@@ -142,8 +146,10 @@ class FullPlayerFragment : Fragment() {
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                seekBar?.let {
-                    viewModel.player.value?.seekTo(it.progress.toLong())
+                seekBar?.let { bar ->
+                    viewModel.player.value?.let { player ->
+                        seekToDisplayPosition(player, bar.progress.toLong())
+                    }
                     handler.post(updateProgressAction)
                 }
             }
@@ -153,58 +159,212 @@ class FullPlayerFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.player.observe(viewLifecycleOwner) { player ->
             if (player != null) {
-                updatePlayerUI(player)
+                lastSurateNumero = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+
                 player.addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         updatePlayPauseButton(isPlaying)
-                        if (isPlaying) {
-                            handler.post(updateProgressAction)
-                        } else {
-                            handler.removeCallbacks(updateProgressAction)
-                        }
+                        if (isPlaying) handler.post(updateProgressAction)
+                        else handler.removeCallbacks(updateProgressAction)
                     }
 
-                    override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
-                        updateMetadata(player)
-                        // Update duration when new track loads
-                        if (player.duration != androidx.media3.common.C.TIME_UNSET && player.duration > 0) {
-                            _binding?.textDuration?.text = formatTime(player.duration)
-                            _binding?.seekBar?.max = player.duration.toInt()
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        val newSurateNo = mediaItem?.mediaMetadata?.extras
+                            ?.getInt("sourateNumero", -1) ?: -1
+                        val isSameSurah = newSurateNo != -1 && newSurateNo == lastSurateNumero
+                        lastSurateNumero = newSurateNo
+
+                        if (!isSameSurah) {
+                            // Truly different surah — refresh title and seekbar range
+                            updateMetadata(player)
+                            val surahTotal = getSurahTotalMs(player)
+                            if (surahTotal > 0) {
+                                _binding?.textDuration?.text = formatTime(surahTotal)
+                                _binding?.seekBar?.max = surahTotal.toInt()
+                            }
+
+                            // PLAY_CURRENT_AND_STOP: pause only on surah boundary, not on part boundary
+                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO
+                                && viewModel.playbackMode.value == PlaybackMode.PLAY_CURRENT_AND_STOP
+                            ) {
+                                player.pause()
+                            }
                         }
-                        // PLAY_CURRENT_AND_STOP: pause when current surah ends and auto-advances
-                        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO
-                            && viewModel.playbackMode.value == PlaybackMode.PLAY_CURRENT_AND_STOP) {
-                            player.pause()
-                        }
+                        // If isSameSurah (part transition): do nothing — progress bar continues seamlessly
                     }
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         when (playbackState) {
                             Player.STATE_READY, Player.STATE_BUFFERING -> {
-                                if (player.duration != androidx.media3.common.C.TIME_UNSET && player.duration > 0) {
-                                    _binding?.textDuration?.text = formatTime(player.duration)
-                                    _binding?.seekBar?.max = player.duration.toInt()
+                                // Prefer surahTotalMs from extras for multi-part surahs
+                                val surahTotal = getSurahTotalMs(player)
+                                if (surahTotal > 0) {
+                                    _binding?.textDuration?.text = formatTime(surahTotal)
+                                    _binding?.seekBar?.max = surahTotal.toInt()
                                 }
-                                if (playbackState == Player.STATE_READY) {
-                                    updateMetadata(player)
-                                }
+                                if (playbackState == Player.STATE_READY) updateMetadata(player)
                             }
                         }
                     }
                 })
-                
-                // Initial update
+
+                // Initial UI state
                 updatePlayPauseButton(player.isPlaying)
                 updateMetadata(player)
                 updateRepeatModeButton(viewModel.playbackMode.value ?: PlaybackMode.SEQUENTIAL)
                 updateShuffleButton(player.shuffleModeEnabled)
+                val surahTotal = getSurahTotalMs(player)
+                if (surahTotal > 0) {
+                    _binding?.textDuration?.text = formatTime(surahTotal)
+                    _binding?.seekBar?.max = surahTotal.toInt()
+                }
                 if (player.isPlaying) handler.post(updateProgressAction)
             }
         }
     }
 
-    private fun updatePlayerUI(player: Player) {
-        // Initial setup if needed
+    // ──────────────────────────────────────────────────────────────────────
+    // Combined progress helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    private fun getCurrentExtras(player: Player): android.os.Bundle? =
+        player.currentMediaItem?.mediaMetadata?.extras
+
+    /**
+     * The position to display on the seekbar:
+     * offset of this part within the surah + actual position within this part.
+     */
+    private fun getDisplayPosition(player: Player): Long {
+        val cumStart = getCurrentExtras(player)?.getLong("cumulativeStartMs", 0L) ?: 0L
+        return cumStart + player.currentPosition.coerceAtLeast(0L)
+    }
+
+    /**
+     * The total duration to display:
+     * surahTotalMs covers all parts; falls back to player.duration for single-part surahs.
+     */
+    private fun getSurahTotalMs(player: Player): Long {
+        val stored = getCurrentExtras(player)?.getLong("surahTotalMs", 0L) ?: 0L
+        if (stored > 0) return stored
+        val live = player.duration
+        return if (live > 0 && live != androidx.media3.common.C.TIME_UNSET) live else 0L
+    }
+
+    /**
+     * Converts a seekbar position (in ms within the full surah) to a
+     * (partIndex, offsetWithinPart) seek, then tells ExoPlayer to jump there.
+     */
+    private fun seekToDisplayPosition(player: Player, displayPositionMs: Long) {
+        val extras = getCurrentExtras(player)
+        val currentSurateNo = extras?.getInt("sourateNumero", -1) ?: -1
+        val surahTotalMs = extras?.getLong("surahTotalMs", 0L) ?: 0L
+        
+        if (currentSurateNo < 0 || surahTotalMs == 0L) {
+            // Si la durée totale est inconnue (duree = 0 dans la base de données), 
+            // on fait un seek classique sur la partie en cours.
+            player.seekTo(displayPositionMs)
+            return
+        }
+
+        // Find the first MediaItem index belonging to this surah
+        var surahStartIdx = player.currentMediaItemIndex
+        while (surahStartIdx > 0) {
+            val prevExtras = player.getMediaItemAt(surahStartIdx - 1).mediaMetadata.extras
+            if (prevExtras?.getInt("sourateNumero", -1) == currentSurateNo) surahStartIdx--
+            else break
+        }
+
+        // Walk forward through parts to find which one contains displayPositionMs
+        var idx = surahStartIdx
+        while (idx < player.mediaItemCount) {
+            val itemExtras = player.getMediaItemAt(idx).mediaMetadata.extras
+            if (itemExtras?.getInt("sourateNumero", -1) != currentSurateNo) break
+
+            val cumStart     = itemExtras.getLong("cumulativeStartMs", 0L)
+            val partDur      = itemExtras.getLong("partDurationMs", 0L)
+            val nextCumStart = cumStart + partDur
+            val isLastPart = idx + 1 >= player.mediaItemCount ||
+                    player.getMediaItemAt(idx + 1).mediaMetadata.extras
+                        ?.getInt("sourateNumero", -1) != currentSurateNo
+
+            if (displayPositionMs < nextCumStart || isLastPart) {
+                val offset = (displayPositionMs - cumStart).coerceAtLeast(0L)
+                player.seekTo(idx, offset)
+                return
+            }
+            idx++
+        }
+    }
+
+    /**
+     * Jump to the first part of the NEXT surah.
+     */
+    private fun seekToNextSurah(player: Player) {
+        val currentSurateNo = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+        if (currentSurateNo < 0) { player.seekToNext(); return }
+
+        var idx = player.currentMediaItemIndex + 1
+        while (idx < player.mediaItemCount) {
+            val surateNo = player.getMediaItemAt(idx).mediaMetadata.extras
+                ?.getInt("sourateNumero", -1)
+            if (surateNo != currentSurateNo) {
+                player.seekTo(idx, 0)
+                return
+            }
+            idx++
+        }
+        // Already at last surah — no-op (or you can wrap around)
+    }
+
+    /**
+     * Jump to the first part of the PREVIOUS surah.
+     */
+    private fun seekToPrevSurah(player: Player) {
+        val currentSurateNo = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+        if (currentSurateNo < 0) { player.seekToPrevious(); return }
+
+        // Step back past all parts of the current surah
+        var idx = player.currentMediaItemIndex - 1
+        while (idx >= 0) {
+            if (player.getMediaItemAt(idx).mediaMetadata.extras
+                    ?.getInt("sourateNumero", -1) != currentSurateNo
+            ) break
+            idx--
+        }
+
+        if (idx < 0) {
+            // Already at the very first surah — restart it
+            player.seekTo(0, 0)
+            return
+        }
+
+        // Now find the FIRST part of this previous surah
+        val prevSurateNo = player.getMediaItemAt(idx).mediaMetadata.extras
+            ?.getInt("sourateNumero", -1)
+        while (idx > 0) {
+            val prevExtras = player.getMediaItemAt(idx - 1).mediaMetadata.extras
+            if (prevExtras?.getInt("sourateNumero", -1) != prevSurateNo) break
+            idx--
+        }
+        player.seekTo(idx, 0)
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // UI update helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    private fun updateMetadata(player: Player) {
+        val extras = getCurrentExtras(player)
+        val rawTitle = player.mediaMetadata.title?.toString() ?: "Unknown Title"
+        // For multi-part surahs, strip the " — الجزء X/Y" suffix so the title
+        // displayed in the UI always shows the surah name only.
+        val surahName = if ((extras?.getInt("totalParts", 1) ?: 1) > 1) {
+            rawTitle.substringBefore(" — ")
+        } else {
+            rawTitle
+        }
+        _binding?.textFullTitle?.text = surahName
+        _binding?.textFullArtist?.text = player.mediaMetadata.artist ?: "Unknown Artist"
     }
 
     private fun updatePlayPauseButton(isPlaying: Boolean) {
@@ -213,75 +373,58 @@ class FullPlayerFragment : Fragment() {
         )
     }
 
-    private fun updateMetadata(player: Player) {
-        val metadata = player.mediaMetadata
-        _binding?.textFullTitle?.text = metadata.title ?: "Unknown Title"
-        _binding?.textFullArtist?.text = metadata.artist ?: "Unknown Artist"
-    }
-    
     private fun updateRepeatModeButton(mode: PlaybackMode) {
-        _binding?.let { binding ->
+        _binding?.let { b ->
             when (mode) {
                 PlaybackMode.SEQUENTIAL -> {
-                    binding.btnRepeatMode.setImageResource(R.drawable.ic_play_sequential)
-                    binding.btnRepeatMode.setColorFilter(
-                        requireContext().getColor(R.color.gray_500)
-                    )
-                    binding.btnRepeatMode.contentDescription = "تشغيل متتابع"
+                    b.btnRepeatMode.setImageResource(R.drawable.ic_play_sequential)
+                    b.btnRepeatMode.setColorFilter(requireContext().getColor(R.color.gray_500))
+                    b.btnRepeatMode.contentDescription = "تشغيل متتابع"
                 }
                 PlaybackMode.REPEAT_ALL -> {
-                    binding.btnRepeatMode.setImageResource(R.drawable.ic_repeat)
-                    binding.btnRepeatMode.setColorFilter(
-                        requireContext().getColor(R.color.huda_gold)
-                    )
-                    binding.btnRepeatMode.contentDescription = "تكرار الكل"
+                    b.btnRepeatMode.setImageResource(R.drawable.ic_repeat)
+                    b.btnRepeatMode.setColorFilter(requireContext().getColor(R.color.huda_gold))
+                    b.btnRepeatMode.contentDescription = "تكرار الكل"
                 }
                 PlaybackMode.REPEAT_ONE -> {
-                    binding.btnRepeatMode.setImageResource(R.drawable.ic_repeat_one)
-                    binding.btnRepeatMode.setColorFilter(
-                        requireContext().getColor(R.color.huda_gold)
-                    )
-                    binding.btnRepeatMode.contentDescription = "تكرار السورة"
+                    b.btnRepeatMode.setImageResource(R.drawable.ic_repeat_one)
+                    b.btnRepeatMode.setColorFilter(requireContext().getColor(R.color.huda_gold))
+                    b.btnRepeatMode.contentDescription = "تكرار السورة"
                 }
                 PlaybackMode.PLAY_CURRENT_AND_STOP -> {
-                    binding.btnRepeatMode.setImageResource(R.drawable.ic_play_once_stop)
-                    binding.btnRepeatMode.setColorFilter(
-                        requireContext().getColor(R.color.huda_gold)
-                    )
-                    binding.btnRepeatMode.contentDescription = "تشغيل السورة الحالية والتوقف"
+                    b.btnRepeatMode.setImageResource(R.drawable.ic_play_once_stop)
+                    b.btnRepeatMode.setColorFilter(requireContext().getColor(R.color.huda_gold))
+                    b.btnRepeatMode.contentDescription = "تشغيل السورة الحالية والتوقف"
                 }
             }
         }
     }
-    
-    private fun updateShuffleButton(isShuffleEnabled: Boolean) {
+
+    private fun updateShuffleButton(isEnabled: Boolean) {
         _binding?.btnShuffle?.setColorFilter(
-            requireContext().getColor(
-                if (isShuffleEnabled) R.color.huda_gold else R.color.gray_500
-            )
+            requireContext().getColor(if (isEnabled) R.color.huda_gold else R.color.gray_500)
         )
     }
 
     private fun updateSleepTimerButton(isActive: Boolean) {
         _binding?.btnSleepTimer?.setColorFilter(
-            requireContext().getColor(
-                if (isActive) R.color.huda_gold else R.color.gray_500
-            )
+            requireContext().getColor(if (isActive) R.color.huda_gold else R.color.gray_500)
         )
     }
 
     private fun updateProgress() {
         viewModel.player.value?.let { player ->
-            val position = player.currentPosition
-            val duration = player.duration
-            
-            _binding?.seekBar?.progress = position.toInt()
-            _binding?.textPosition?.text = formatTime(position)
-            
-            // Update duration if it's valid and different from what's displayed
-            if (duration != androidx.media3.common.C.TIME_UNSET && duration > 0) {
-                _binding?.textDuration?.text = formatTime(duration)
-                _binding?.seekBar?.max = duration.toInt()
+            val displayPos = getDisplayPosition(player)
+            val displayDur = getSurahTotalMs(player)
+
+            _binding?.seekBar?.progress = displayPos.toInt()
+            _binding?.textPosition?.text = formatTime(displayPos)
+
+            if (displayDur > 0) {
+                _binding?.textDuration?.text = formatTime(displayDur)
+                if (_binding?.seekBar?.max != displayDur.toInt()) {
+                    _binding?.seekBar?.max = displayDur.toInt()
+                }
             }
         }
     }
@@ -290,11 +433,5 @@ class FullPlayerFragment : Fragment() {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(ms)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
         return String.format("%02d:%02d", minutes, seconds)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        handler.removeCallbacks(updateProgressAction)
-        _binding = null
     }
 }

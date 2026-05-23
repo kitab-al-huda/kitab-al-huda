@@ -15,6 +15,11 @@ object CsvHelper {
     suspend fun populateDatabase(context: Context, database: AppDatabase) {
         withContext(Dispatchers.IO) {
             try {
+                // Check if already populated to prevent cascade deletes of user playlists/history on restart
+                if (database.sourateDao().getAllSouratesDirect().isNotEmpty()) {
+                    return@withContext
+                }
+
                 // Load Reciteurs
                 val reciteurs = loadReciteurs(context)
                 database.reciteurDao().insertAll(reciteurs)
@@ -23,13 +28,17 @@ object CsvHelper {
                 val sourates = loadSourates(context)
                 database.sourateDao().insertAll(sourates)
 
-                // Load Audios
+                // Load Audios (reciteurs classiques via HTTP direct)
                 val audios = loadAudios(context)
                 database.audioDao().insertAll(audios)
 
-                // Load Minshawi Audios (Messenger BDD)
+                // Load Minshawi Audios (Messenger BDD — zero-rated)
                 val minshawiAudios = loadMinshawiAudios(context)
                 database.audioDao().insertAll(minshawiAudios)
+
+                // Load Afasy Audios (Messenger BDD — zero-rated)
+                val afasyAudios = loadAfasyAudios(context)
+                database.audioDao().insertAll(afasyAudios)
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -100,11 +109,14 @@ object CsvHelper {
                     if (tokens.size >= 4) {
                         try {
                             val reciteurId = tokens[0].trim().toInt()
-                            val sourateNumero = tokens[1].trim().toInt()
-                            val duree = tokens[2].trim().toLong()
-                            val urlWeb = tokens[3].trim()
-                            val pathLocal = if (tokens.size > 4 && tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
-                            list.add(AudioEntity(reciteurId = reciteurId, sourateNumero = sourateNumero, duree = duree, urlWeb = urlWeb, pathLocal = pathLocal))
+                            // Exclure les réciteurs ayant des fichiers audio zero-rated dédiés
+                            if (reciteurId != 1 && reciteurId != 6) {
+                                val sourateNumero = tokens[1].trim().toInt()
+                                val duree = tokens[2].trim().toLong()
+                                val urlWeb = tokens[3].trim()
+                                val pathLocal = if (tokens.size > 4 && tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
+                                list.add(AudioEntity(reciteurId = reciteurId, sourateNumero = sourateNumero, duree = duree, urlWeb = urlWeb, pathLocal = pathLocal))
+                            }
                         } catch (e: Exception) {
                         }
                     }
@@ -117,7 +129,45 @@ object CsvHelper {
 
     private fun loadMinshawiAudios(context: Context): List<AudioEntity> {
         val list = mutableListOf<AudioEntity>()
-        context.assets.open("csv/audios_minshawi.csv").use { inputStream ->
+        context.assets.open("csv/zero_rated/audios_minshawi.csv").use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                reader.readLine() // Skip header
+                var line = reader.readLine()
+                while (line != null) {
+                    val tokens = line.split(",")
+                    if (tokens.size >= 7) {
+                        try {
+                            val reciteurId = tokens[0].trim().toInt()
+                            val sourateNumero = tokens[1].trim().toInt()
+                            val duree = tokens[2].trim().toLong()
+                            val urlWeb = tokens[3].trim()
+                            val pathLocal = if (tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
+                            val fbMessageId = if (tokens[5].trim().isNotEmpty()) tokens[5].trim() else null
+                            val partNumber = tokens[6].trim().toInt()
+                            list.add(
+                                AudioEntity(
+                                    reciteurId = reciteurId,
+                                    sourateNumero = sourateNumero,
+                                    duree = duree,
+                                    urlWeb = urlWeb,
+                                    pathLocal = pathLocal,
+                                    fbMessageId = fbMessageId,
+                                    partNumber = partNumber
+                                )
+                            )
+                        } catch (e: Exception) {
+                        }
+                    }
+                    line = reader.readLine()
+                }
+            }
+        }
+        return list
+    }
+
+    private fun loadAfasyAudios(context: Context): List<AudioEntity> {
+        val list = mutableListOf<AudioEntity>()
+        context.assets.open("csv/zero_rated/audios_afasy.csv").use { inputStream ->
             BufferedReader(InputStreamReader(inputStream)).use { reader ->
                 reader.readLine() // Skip header
                 var line = reader.readLine()

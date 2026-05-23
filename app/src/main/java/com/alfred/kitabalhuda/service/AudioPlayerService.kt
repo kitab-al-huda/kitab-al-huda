@@ -6,6 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import com.alfred.kitabalhuda.repository.MessengerRepository
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -13,7 +14,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.guava.future
-
+import kotlinx.coroutines.runBlocking
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.ResolvingDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 class AudioPlayerService : MediaLibraryService() {
 
     private lateinit var player: ExoPlayer
@@ -34,10 +38,45 @@ class AudioPlayerService : MediaLibraryService() {
 
     override fun onCreate() {
         super.onCreate()
-        player = ExoPlayer.Builder(this).build()
         messengerRepository = MessengerRepository.getInstance(this)
+
+        // Configuration du Lazy Loading (Résolution juste avant lecture)
+        val defaultDataSourceFactory = DefaultDataSource.Factory(this)
+        val resolvingDataSourceFactory = ResolvingDataSource.Factory(
+            defaultDataSourceFactory
+        ) { dataSpec ->
+            val uri = dataSpec.uri
+            if (uri.scheme == "messenger") {
+                val messageId = uri.host ?: uri.path?.removePrefix("/") ?: uri.toString().removePrefix(MESSENGER_URI_SCHEME)
+                val cdnUrl = runBlocking { messengerRepository.resolveAudioUrl(messageId) }
+                if (cdnUrl != null) {
+                    Log.d(TAG, "Lazy resolved messenger URI to CDN: ${cdnUrl.take(80)}...")
+                    dataSpec.buildUpon().setUri(android.net.Uri.parse(cdnUrl)).build()
+                } else {
+                    dataSpec
+                }
+            } else {
+                dataSpec
+            }
+        }
+
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(resolvingDataSourceFactory))
+            .build()
         
         mediaSession = MediaLibrarySession.Builder(this, player, LibrarySessionCallback()).build()
+
+        // Handle the case where Android 12+ refuses to start the foreground service
+        // (e.g. when the user-gesture token has expired before Media3 calls startForeground).
+        // Without this listener the exception propagates uncaught and the notification
+        // never appears, even though audio playback continues.
+        setListener(object : MediaSessionService.Listener {
+            override fun onForegroundServiceStartNotAllowedException() {
+                Log.w(TAG, "Foreground service start not allowed – notification may be delayed. " +
+                    "Audio playback will continue without the media notification until the " +
+                    "app returns to the foreground.")
+            }
+        })
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
@@ -122,25 +161,18 @@ class AudioPlayerService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
-            // Resolve messenger:// URIs to CDN URLs asynchronously
-            return serviceScope.future {
-                mediaItems.map { item ->
-                    val mediaId = item.mediaId
-                    if (mediaId.startsWith(MESSENGER_URI_SCHEME)) {
-                        val messageId = mediaId.removePrefix(MESSENGER_URI_SCHEME)
-                        val cdnUrl = messengerRepository.resolveAudioUrl(messageId)
-                        if (cdnUrl != null) {
-                            Log.d(TAG, "Resolved messenger URI to CDN: ${cdnUrl.take(80)}...")
-                            item.buildUpon().setUri(cdnUrl).build()
-                        } else {
-                            Log.w(TAG, "Failed to resolve messenger URI for: $messageId")
-                            item.buildUpon().setUri(mediaId).build()
-                        }
-                    } else {
-                        item.buildUpon().setUri(mediaId).build()
-                    }
-                }.toMutableList()
-            }
+            // Lazy Loading: on conserve l'URI messenger:// tel quel.
+            // Il sera résolu juste avant la lecture par le ResolvingDataSource.
+            val updatedMediaItems = mediaItems.map { item ->
+                val mediaId = item.mediaId
+                if (mediaId.startsWith(MESSENGER_URI_SCHEME)) {
+                    item.buildUpon().setUri(android.net.Uri.parse(mediaId)).build()
+                } else {
+                    item.buildUpon().setUri(mediaId).build()
+                }
+            }.toMutableList()
+            
+            return Futures.immediateFuture(updatedMediaItems)
         }
     }
 }

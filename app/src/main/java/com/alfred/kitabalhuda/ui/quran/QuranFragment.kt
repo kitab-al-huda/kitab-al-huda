@@ -60,11 +60,13 @@ class QuranFragment : Fragment() {
                 
                 lifecycleScope.launch {
                     val selectedReciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
-                    val audio = withContext(Dispatchers.IO) {
-                         audioDao.getAudioForSurahAndReciter(selectedReciterId, sourate.numero)
+                    // Fetch ALL parts so multi-part surahs (e.g. Al-Baqara) play fully in playlists
+                    val audioParts = withContext(Dispatchers.IO) {
+                        audioDao.getAudioPartsForSurah(selectedReciterId, sourate.numero)
                     }
-                    if (audio != null) {
-                        val sheet = com.alfred.kitabalhuda.ui.library.AddToPlaylistBottomSheet.newInstance(audio.id)
+                    if (audioParts.isNotEmpty()) {
+                        val sheet = com.alfred.kitabalhuda.ui.library.AddToPlaylistBottomSheet
+                            .newInstance(audioParts.map { it.id })
                         sheet.show(parentFragmentManager, com.alfred.kitabalhuda.ui.library.AddToPlaylistBottomSheet.TAG)
                     } else {
                         Toast.makeText(context, "Audio not found", Toast.LENGTH_SHORT).show()

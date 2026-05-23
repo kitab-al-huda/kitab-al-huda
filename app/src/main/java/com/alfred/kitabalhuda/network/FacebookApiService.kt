@@ -21,7 +21,7 @@ interface FacebookApiService {
      * @param fields Champs à récupérer (default: "attachments")
      * @param accessToken Le token d'accès à la page Facebook
      */
-    @GET("v24.0/{messageId}")
+    @GET("{messageId}")
     suspend fun getMessageAttachments(
         @Path("messageId") messageId: String,
         @Query("fields") fields: String = "attachments",

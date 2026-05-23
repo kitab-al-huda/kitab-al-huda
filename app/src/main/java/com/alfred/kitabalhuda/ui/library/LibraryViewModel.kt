@@ -40,9 +40,14 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun addTrackToPlaylist(playlistId: Int, audioId: Long) {
+    /**
+     * Adds ALL parts of a surah to a playlist.
+     * For single-part surahs: audioIds has 1 element.
+     * For multi-part surahs (e.g. Al-Baqara with 5 Minshawi parts): all 5 are inserted in order.
+     */
+    fun addTracksToPlaylist(playlistId: Int, audioIds: List<Long>) {
         viewModelScope.launch {
-             repository.addAudioToPlaylist(playlistId, audioId)
+            repository.addAudioPartsToPlaylist(playlistId, audioIds)
         }
     }
 }

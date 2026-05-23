@@ -17,12 +17,13 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: LibraryViewModel
-    // Passing the audioId we want to add
-    private var audioId: Long = -1
+
+    // All audio-part IDs for the surah being added (1 item for single-part, N items for multi-part)
+    private var audioIds: List<Long> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioId = arguments?.getLong(ARG_AUDIO_ID) ?: -1
+        audioIds = arguments?.getLongArray(ARG_AUDIO_IDS)?.toList() ?: emptyList()
     }
 
     override fun onCreateView(
@@ -39,18 +40,14 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
         viewModel = ViewModelProvider(requireActivity())[LibraryViewModel::class.java]
 
         setupRecyclerView()
-        
+
         binding.btnNewPlaylist.setOnClickListener {
-             // Show create dialog, then add to it?
-             // For simplicity: Dismiss this, show create dialog.
-             // Ideally we want to create AND add.
-             dismiss()
-             val createSheet = CreatePlaylistBottomSheet { name ->
-                 viewModel.createPlaylist(name)
-                 // TODO: We should also add the current track to the new playlist automatically
-                 // But for MVP, just creating is fine.
-             }
-             createSheet.show(parentFragmentManager, CreatePlaylistBottomSheet.TAG)
+            dismiss()
+            val createSheet = CreatePlaylistBottomSheet { name ->
+                viewModel.createPlaylist(name)
+                // TODO: Automatically add the current tracks to the new playlist after creation
+            }
+            createSheet.show(parentFragmentManager, CreatePlaylistBottomSheet.TAG)
         }
     }
 
@@ -67,14 +64,16 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun addToPlaylist(playlist: PlaylistEntity) {
-        if (audioId != -1L) {
-             // We need a method in ViewModel to add track
-             // Since LibraryViewModel serves the list, let's add `addTrackToPlaylist` there or use `PlaylistDetailViewModel`
-             // LibraryViewModel is scoped to Activity, good place.
-             // But we haven't added `addTrack` to it yet.
-             (viewModel as? LibraryViewModel)?.addTrackToPlaylist(playlist.id, audioId)
-             Toast.makeText(context, "Added to ${playlist.name}", Toast.LENGTH_SHORT).show()
-             dismiss()
+        if (audioIds.isNotEmpty()) {
+            // Adds all parts of the surah so multi-part surahs play fully from the playlist
+            viewModel.addTracksToPlaylist(playlist.id, audioIds)
+            val msg = if (audioIds.size > 1) {
+                "Added to ${playlist.name} (${audioIds.size} parts)"
+            } else {
+                "Added to ${playlist.name}"
+            }
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            dismiss()
         }
     }
 
@@ -85,12 +84,17 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "AddToPlaylistBottomSheet"
-        const val ARG_AUDIO_ID = "audio_id"
+        const val ARG_AUDIO_IDS = "audio_ids"
 
-        fun newInstance(audioId: Long): AddToPlaylistBottomSheet {
+        /**
+         * Creates a new instance for a surah.
+         * Pass ALL part audio IDs so multi-part surahs (e.g. Al-Baqara with 5 parts)
+         * are saved completely into the playlist.
+         */
+        fun newInstance(audioIds: List<Long>): AddToPlaylistBottomSheet {
             val sheet = AddToPlaylistBottomSheet()
             val args = Bundle()
-            args.putLong(ARG_AUDIO_ID, audioId)
+            args.putLongArray(ARG_AUDIO_IDS, audioIds.toLongArray())
             sheet.arguments = args
             return sheet
         }
