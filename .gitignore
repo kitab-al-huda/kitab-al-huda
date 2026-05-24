@@ -1,28 +1,37 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
+# Keystore and Keys info (never commit credentials)
+*Keystore Info.txt
+*-keystore.jks
+*.jks
+
+# Environment and private configs
+.env
+.venv
+local.properties
+encrypt.py
+
+# Build & System
 /build
+app/build/
+.gradle
+*.iml
+.DS_Store
+/.idea/
+
+# Android Captures and Releases
 /captures
 .externalNativeBuild
 .cxx
-local.properties
-.env
-.venv
-/build
-/local.properties
-.vscode/
-app/build/
-app/src/main/java/com/alfred/a7lite/utils/EncryptionUtils.kt
-app/src/test/java/com/alfred/a7lite/util/
-encrypt.py
 app/release/
-A7-lite-Keystore Info.txt
-A7-keystore.jks
+
+# IDE configurations
+.vscode/
+*.code-workspace
+
+# Local test databases and artifacts
+*.db
+*.logcat
+*.log
+test_compile.kt
+
+# Legacy / Miscellaneous
 gemini.md
