@@ -49,7 +49,7 @@ Kitab al-Huda/
 │   │   │       └── com/
 │   │   │           └── alfred/
 │   │   │               └── kitabalhuda/
-│   │   │                   └── ExampleInstrumentedTest.kt
+│   │   │                   └── PlaylistDatabaseTest.kt
 │   │   ├── main/
 │   │   │   ├── AndroidManifest.xml
 │   │   │   ├── java/
@@ -242,7 +242,10 @@ Kitab al-Huda/
 │   │           └── com/
 │   │               └── alfred/
 │   │                   └── kitabalhuda/
-│   │                       └── ExampleUnitTest.kt
+│   │                       ├── util/
+│   │                       │   └── EncryptionUtilsTest.kt
+│   │                       ├── ExampleUnitTest.kt
+│   │                       └── SourateSearchTest.kt
 │   └── build/
 ├── gradle/
 └── local.properties
@@ -250,7 +253,7 @@ Kitab al-Huda/
 
 ## Key Notes
 
-- **Islamic Context**: The project has transitioned from an Anime-based template to a specialized Islamic application.
+- **Islamic Context**: The project is a specialized Islamic application.
 - **Data Model**:
   - `SourateEntity`: Represents the 114 surahs of the Quran.
   - `ReciteurEntity`: Information about different Qaris (reciters).

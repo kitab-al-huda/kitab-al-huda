@@ -3,148 +3,138 @@ import sqlite3
 import json
 import sys
 
-DB_PATH = "/workspace/project/anime_real.db"
+DB_PATH = "quran_real.db"
 
-def get_anime_details(anime_id=None, anime_title=None):
+def get_reciter_details(reciter_id=None, reciter_name=None):
     """
-    Retrieve anime details by ID or title
+    Retrieve reciter details by ID or name
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
-    if anime_id:
-        cursor.execute("SELECT * FROM animes WHERE postId = ?", (anime_id,))
-    elif anime_title:
-        cursor.execute("SELECT * FROM animes WHERE titleEn LIKE ?", (f"%{anime_title}%",))
+
+    if reciter_id:
+        cursor.execute("SELECT * FROM reciters WHERE postId = ?", (reciter_id,))
+    elif reciter_name:
+        cursor.execute("SELECT * FROM reciters WHERE nameEn LIKE ?", (f"%{reciter_name}%",))
     else:
-        print("Error: Must provide either anime_id or anime_title")
+        print("Error: Must provide either reciter_id or reciter_name")
         conn.close()
         return None
-    
-    anime_row = cursor.fetchone()
-    
-    if not anime_row:
-        print(f"No anime found with the given {'ID' if anime_id else 'title'}")
+
+    reciter_row = cursor.fetchone()
+
+    if not reciter_row:
+        print(f"No reciter found with the given {'ID' if reciter_id else 'name'}")
         conn.close()
         return None
-    
-    anime = dict(anime_row)
-    anime["genres"] = json.loads(anime["genres"]) if anime["genres"] else None
-    
-    # Get episodes
-    cursor.execute("SELECT * FROM episodes WHERE animePostId = ? ORDER BY episodeNumber", (anime["postId"],))
-    episode_rows = cursor.fetchall()
-    
-    episodes = []
-    for row in episode_rows:
-        episode = dict(row)
-        episode["servers"] = json.loads(episode["servers"])
-        episode["isFiller"] = bool(episode["isFiller"])
-        episodes.append(episode)
-    
+
+    reciter = dict(reciter_row)
+
+    # Get surahs
+    cursor.execute("SELECT * FROM surahs WHERE reciterPostId = ? ORDER BY CAST(surahNumber AS INTEGER)", (reciter["postId"],))
+    surah_rows = cursor.fetchall()
+
+    surahs = []
+    for row in surah_rows:
+        surah = dict(row)
+        surah["servers"] = json.loads(surah["servers"])
+        surahs.append(surah)
+
     conn.close()
-    
+
     return {
-        "anime": anime,
-        "episodes": episodes
+        "reciter": reciter,
+        "surahs": surahs
     }
 
-def list_all_animes():
+def list_all_reciters():
     """
-    List all animes in the database
+    List all reciters in the database
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT postId, titleEn, type, year FROM animes ORDER BY titleEn")
-    rows = cursor.fetchall()
-    
-    animes = []
-    for row in rows:
-        animes.append(dict(row))
-    
-    conn.close()
-    return animes
 
-def search_animes(query):
+    cursor.execute("SELECT postId, nameEn, surahsCount FROM reciters ORDER BY nameEn")
+    rows = cursor.fetchall()
+
+    reciters = []
+    for row in rows:
+        reciters.append(dict(row))
+
+    conn.close()
+    return reciters
+
+def search_reciters(query):
     """
-    Search animes by title
+    Search reciters by name or description
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
+
     cursor.execute("""
-    SELECT postId, titleEn, type, year FROM animes 
-    WHERE titleEn LIKE ? OR titleJp LIKE ? OR titleAr LIKE ? OR description LIKE ?
-    ORDER BY titleEn
-    """, (f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"))
-    
+    SELECT postId, nameEn, surahsCount FROM reciters
+    WHERE nameEn LIKE ? OR nameAr LIKE ? OR description LIKE ?
+    ORDER BY nameEn
+    """, (f"%{query}%", f"%{query}%", f"%{query}%"))
+
     rows = cursor.fetchall()
-    
-    animes = []
+
+    reciters = []
     for row in rows:
-        animes.append(dict(row))
-    
+        reciters.append(dict(row))
+
     conn.close()
-    return animes
+    return reciters
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python test_database.py [list|search|details] [query|anime_id]")
+        print("Usage: python test_database.py [list|search|details] [query|reciter_id]")
         return
-    
+
     command = sys.argv[1]
-    
+
     if command == "list":
-        animes = list_all_animes()
-        print(f"Found {len(animes)} animes:")
-        for anime in animes:
-            print(f"- {anime['titleEn']} ({anime['type']}, {anime['year']})")
-    
+        reciters = list_all_reciters()
+        print(f"Found {len(reciters)} reciters:")
+        for reciter in reciters:
+            print(f"- {reciter['nameEn']} (Surahs: {reciter['surahsCount']})")
+
     elif command == "search" and len(sys.argv) > 2:
         query = sys.argv[2]
-        animes = search_animes(query)
-        print(f"Found {len(animes)} animes matching '{query}':")
-        for anime in animes:
-            print(f"- {anime['titleEn']} ({anime['type']}, {anime['year']}) [ID: {anime['postId']}]")
-    
+        reciters = search_reciters(query)
+        print(f"Found {len(reciters)} reciters matching '{query}':")
+        for reciter in reciters:
+            print(f"- {reciter['nameEn']} (Surahs: {reciter['surahsCount']}) [ID: {reciter['postId']}]")
+
     elif command == "details" and len(sys.argv) > 2:
-        anime_id = sys.argv[2]
-        anime_data = get_anime_details(anime_id=anime_id)
-        
-        if anime_data:
-            anime = anime_data["anime"]
-            episodes = anime_data["episodes"]
-            
-            print(f"\nAnime: {anime['titleEn']}")
-            print(f"Japanese Title: {anime['titleJp']}")
-            print(f"Arabic Title: {anime['titleAr']}")
-            print(f"Type: {anime['type']}")
-            print(f"Year: {anime['year']}")
-            print(f"Status: {anime['status']}")
-            print(f"Rating: {anime['rating']}")
-            print(f"Episodes Count: {len(episodes)}")
-            
-            if anime["genres"]:
-                print(f"Genres: {', '.join(anime['genres'])}")
-            
-            print(f"\nDescription: {anime['description'][:200]}...")
-            
-            print(f"\nEpisodes:")
-            for episode in episodes[:5]:  # Show first 5 episodes
-                print(f"- Episode {episode['episodeNumber']}: {episode['title']}")
-                print(f"  Duration: {episode['duration']}")
-                print(f"  Servers: {len(episode['servers'])}")
-            
-            if len(episodes) > 5:
-                print(f"... and {len(episodes) - 5} more episodes")
-    
+        reciter_id = sys.argv[2]
+        reciter_data = get_reciter_details(reciter_id=reciter_id)
+
+        if reciter_data:
+            reciter = reciter_data["reciter"]
+            surahs = reciter_data["surahs"]
+
+            print(f"\nReciter: {reciter['nameEn']}")
+            print(f"Arabic Name: {reciter['nameAr']}")
+            print(f"Surahs Count: {len(surahs)}")
+
+            print(f"\nDescription: {reciter['description'][:200]}...")
+
+            print(f"\nSurahs:")
+            for surah in surahs[:5]:  # Show first 5 surahs
+                print(f"- Surah {surah['surahNumber']}: {surah['title']}")
+                print(f"  Duration: {surah['duration']}")
+                print(f"  Servers: {len(surah['servers'])}")
+
+            if len(surahs) > 5:
+                print(f"... and {len(surahs) - 5} more surahs")
+
     else:
         print("Invalid command or missing arguments")
-        print("Usage: python test_database.py [list|search|details] [query|anime_id]")
+        print("Usage: python test_database.py [list|search|details] [query|reciter_id]")
 
 if __name__ == "__main__":
     main()
