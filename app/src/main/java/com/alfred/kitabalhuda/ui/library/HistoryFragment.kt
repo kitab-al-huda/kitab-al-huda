@@ -37,12 +37,14 @@ class HistoryFragment : Fragment() {
 
     private fun setupRecyclerView() {
         val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
-        
+
         adapter = HistoryAdapter { historyItem ->
-            // Play from this track
-            playerViewModel.playSurah(
+            // Play from this track with the stored reciter
+            playerViewModel.playSurahWithReciter(
                 historyItem.sourate.numero,
-                historyItem.sourate.nomPhonetique
+                historyItem.sourate.nomArabe,
+                historyItem.reciteur.id,
+                historyItem.reciteur.nom
             )
             Toast.makeText(context, "Playing ${historyItem.sourate.nomPhonetique}", Toast.LENGTH_SHORT).show()
         }

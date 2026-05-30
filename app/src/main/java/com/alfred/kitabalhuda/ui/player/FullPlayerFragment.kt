@@ -26,6 +26,9 @@ class FullPlayerFragment : Fragment() {
     /** Tracks the currently displayed sourateNumero to detect real surah changes. */
     private var lastSurateNumero: Int = -1
 
+    private var playerListener: Player.Listener? = null
+    private var currentPlayer: Player? = null
+
     private val updateProgressAction = object : Runnable {
         override fun run() {
             updateProgress()
@@ -51,9 +54,17 @@ class FullPlayerFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
         setupUI()
         observeViewModel()
+        setupFragmentResultListeners()
     }
 
     override fun onDestroyView() {
+        currentPlayer?.let { player ->
+            playerListener?.let { listener ->
+                player.removeListener(listener)
+            }
+        }
+        playerListener = null
+        currentPlayer = null
         super.onDestroyView()
         handler.removeCallbacks(updateProgressAction)
         _binding = null
@@ -118,19 +129,7 @@ class FullPlayerFragment : Fragment() {
         }
 
         binding.btnChangeReciter.setOnClickListener {
-            val sheet = com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.newInstance()
-            sheet.onReciterSelected = { reciter ->
-                viewModel.player.value?.let { player ->
-                    val currentTitle = player.mediaMetadata.title?.toString()
-                    if (currentTitle != null) {
-                        com.alfred.kitabalhuda.util.ReciterPreferences.setSelectedReciter(
-                            requireContext(), reciter.id, reciter.nom
-                        )
-                        val surahNo = getCurrentExtras(player)?.getInt("sourateNumero", 1) ?: 1
-                        viewModel.playSurahWithReciter(surahNo, currentTitle, reciter.id, reciter.nom)
-                    }
-                }
-            }
+            val sheet = com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.newInstance(requestKey = REQUEST_CHANGE_RECITER_FULL)
             sheet.show(parentFragmentManager, com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.TAG)
         }
 
@@ -158,10 +157,18 @@ class FullPlayerFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.player.observe(viewLifecycleOwner) { player ->
+            currentPlayer?.let { oldPlayer ->
+                playerListener?.let { listener ->
+                    oldPlayer.removeListener(listener)
+                }
+            }
+
+            currentPlayer = player
+
             if (player != null) {
                 lastSurateNumero = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
 
-                player.addListener(object : Player.Listener {
+                val listener = object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         updatePlayPauseButton(isPlaying)
                         if (isPlaying) handler.post(updateProgressAction)
@@ -206,7 +213,9 @@ class FullPlayerFragment : Fragment() {
                             }
                         }
                     }
-                })
+                }
+                playerListener = listener
+                player.addListener(listener)
 
                 // Initial UI state
                 updatePlayPauseButton(player.isPlaying)
@@ -219,6 +228,8 @@ class FullPlayerFragment : Fragment() {
                     _binding?.seekBar?.max = surahTotal.toInt()
                 }
                 if (player.isPlaying) handler.post(updateProgressAction)
+            } else {
+                playerListener = null
             }
         }
     }
@@ -429,9 +440,34 @@ class FullPlayerFragment : Fragment() {
         }
     }
 
+    private fun setupFragmentResultListeners() {
+        parentFragmentManager.setFragmentResultListener(
+            REQUEST_CHANGE_RECITER_FULL,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val reciterId = bundle.getInt(com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.RESULT_RECITER_ID)
+            val reciterName = bundle.getString(com.alfred.kitabalhuda.ui.quran.ReciterSelectionBottomSheet.RESULT_RECITER_NAME) ?: return@setFragmentResultListener
+
+            viewModel.player.value?.let { player ->
+                val currentTitle = player.mediaMetadata.title?.toString()
+                if (currentTitle != null) {
+                    com.alfred.kitabalhuda.util.ReciterPreferences.setSelectedReciter(
+                        requireContext(), reciterId, reciterName
+                    )
+                    val surahNo = getCurrentExtras(player)?.getInt("sourateNumero", 1) ?: 1
+                    viewModel.playSurahWithReciter(surahNo, currentTitle, reciterId, reciterName)
+                }
+            }
+        }
+    }
+
     private fun formatTime(ms: Long): String {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(ms)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
         return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    companion object {
+        private const val REQUEST_CHANGE_RECITER_FULL = "changeReciterFullPlayerRequest"
     }
 }

@@ -27,6 +27,13 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             repository.createPlaylist(name)
         }
     }
+
+    fun createPlaylistWithTracks(name: String, audioIds: List<Long>) {
+        viewModelScope.launch {
+            val playlistId = repository.createPlaylist(name)
+            repository.addAudioPartsToPlaylist(playlistId.toInt(), audioIds)
+        }
+    }
     
     fun deletePlaylist(playlist: PlaylistEntity) {
         viewModelScope.launch {

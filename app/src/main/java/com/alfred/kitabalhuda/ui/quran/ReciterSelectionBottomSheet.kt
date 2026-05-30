@@ -20,16 +20,34 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class ReciterSelectionBottomSheet : BottomSheetDialogFragment() {
-    
+
     companion object {
         const val TAG = "ReciterSelectionBottomSheet"
-        
-        fun newInstance(): ReciterSelectionBottomSheet {
-            return ReciterSelectionBottomSheet()
+
+        const val RESULT_RECITER_ID = "reciterId"
+        const val RESULT_RECITER_NAME = "reciterName"
+        const val RESULT_SOURATE_NUMERO = "sourateNumero"
+        const val RESULT_SOURATE_NOM = "sourateNom"
+
+        private const val ARG_REQUEST_KEY = "arg_request_key"
+        private const val ARG_SOURATE_NUMERO = "arg_sourate_numero"
+        private const val ARG_SOURATE_NOM = "arg_sourate_nom"
+
+        fun newInstance(
+            requestKey: String = "reciterSelectionRequest",
+            sourateNumero: Int = -1,
+            sourateNom: String? = null
+        ): ReciterSelectionBottomSheet {
+            val sheet = ReciterSelectionBottomSheet()
+            val args = Bundle().apply {
+                putString(ARG_REQUEST_KEY, requestKey)
+                putInt(ARG_SOURATE_NUMERO, sourateNumero)
+                putString(ARG_SOURATE_NOM, sourateNom)
+            }
+            sheet.arguments = args
+            return sheet
         }
     }
-
-    var onReciterSelected: ((ReciteurEntity) -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,12 +60,24 @@ class ReciterSelectionBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val requestKey = arguments?.getString(ARG_REQUEST_KEY) ?: "reciterSelectionRequest"
+        val sourateNumero = arguments?.getInt(ARG_SOURATE_NUMERO) ?: -1
+        val sourateNom = arguments?.getString(ARG_SOURATE_NOM)
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_reciters)
         val currentReciterId = ReciterPreferences.getSelectedReciterId(requireContext())
 
         val adapter = ReciterSelectionAdapter(currentReciterId) { reciter ->
             ReciterPreferences.setSelectedReciter(requireContext(), reciter.id, reciter.nom)
-            onReciterSelected?.invoke(reciter)
+
+            val result = Bundle().apply {
+                putInt(RESULT_RECITER_ID, reciter.id)
+                putString(RESULT_RECITER_NAME, reciter.nom)
+                putInt(RESULT_SOURATE_NUMERO, sourateNumero)
+                putString(RESULT_SOURATE_NOM, sourateNom)
+            }
+            parentFragmentManager.setFragmentResult(requestKey, result)
+
             dismiss()
         }
         

@@ -43,10 +43,7 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
         binding.btnNewPlaylist.setOnClickListener {
             dismiss()
-            val createSheet = CreatePlaylistBottomSheet { name ->
-                viewModel.createPlaylist(name)
-                // TODO: Automatically add the current tracks to the new playlist after creation
-            }
+            val createSheet = CreatePlaylistBottomSheet.newInstance(audioIds)
             createSheet.show(parentFragmentManager, CreatePlaylistBottomSheet.TAG)
         }
     }

@@ -18,9 +18,12 @@ class PlaylistDetailFragment : Fragment() {
 
     private lateinit var viewModel: PlaylistDetailViewModel
     private lateinit var adapter: PlaylistDetailAdapter
-    
+
     private var playlistId: Int = -1
     private var playlistName: String = ""
+
+    private var playerListener: androidx.media3.common.Player.Listener? = null
+    private var currentPlayer: androidx.media3.common.Player? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,20 +105,38 @@ class PlaylistDetailFragment : Fragment() {
         // Observe player to update currently playing indicator
         val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
         playerViewModel.player.observe(viewLifecycleOwner) { player ->
-            player?.let {
-                // Listen to media item changes
-                it.addListener(object : androidx.media3.common.Player.Listener {
+            currentPlayer?.let { oldPlayer ->
+                playerListener?.let { listener ->
+                    oldPlayer.removeListener(listener)
+                }
+            }
+
+            currentPlayer = player
+
+            if (player != null) {
+                val listener = object : androidx.media3.common.Player.Listener {
                     override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
                         adapter.setCurrentlyPlaying(mediaItem?.mediaId)
                     }
-                })
-                // Set initial state
-                adapter.setCurrentlyPlaying(it.currentMediaItem?.mediaId)
+                }
+                playerListener = listener
+                player.addListener(listener)
+                adapter.setCurrentlyPlaying(player.currentMediaItem?.mediaId)
+            } else {
+                playerListener = null
+                adapter.setCurrentlyPlaying(null)
             }
         }
     }
 
     override fun onDestroyView() {
+        currentPlayer?.let { player ->
+            playerListener?.let { listener ->
+                player.removeListener(listener)
+            }
+        }
+        playerListener = null
+        currentPlayer = null
         super.onDestroyView()
         _binding = null
     }

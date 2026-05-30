@@ -22,16 +22,16 @@ object HadithManager {
 
     suspend fun getRandomHadith(context: Context): Hadith? = withContext(Dispatchers.IO) {
         try {
-            val inputStream = context.assets.open("json/sahih_muslim.json")
-            val reader = InputStreamReader(inputStream)
-            val type = object : TypeToken<List<Hadith>>() {}.type
-            val hadiths: List<Hadith> = Gson().fromJson(reader, type)
-            reader.close()
-            
-            if (hadiths.isNotEmpty()) {
-                hadiths.random()
-            } else {
-                null
+            context.assets.open("json/sahih_muslim.json").use { inputStream ->
+                InputStreamReader(inputStream).use { reader ->
+                    val type = object : TypeToken<List<Hadith>>() {}.type
+                    val hadiths: List<Hadith> = Gson().fromJson(reader, type)
+                    if (hadiths.isNotEmpty()) {
+                        hadiths.random()
+                    } else {
+                        null
+                    }
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

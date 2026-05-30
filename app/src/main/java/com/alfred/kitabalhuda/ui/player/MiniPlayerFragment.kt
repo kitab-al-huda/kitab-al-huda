@@ -12,6 +12,9 @@ class MiniPlayerFragment : Fragment() {
     private var _binding: FragmentMiniPlayerBinding? = null
     private val binding get() = _binding!!
 
+    private var playerListener: androidx.media3.common.Player.Listener? = null
+    private var currentPlayer: androidx.media3.common.Player? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -28,16 +31,22 @@ class MiniPlayerFragment : Fragment() {
         viewModel = androidx.lifecycle.ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
 
         viewModel.player.observe(viewLifecycleOwner) { player ->
+            currentPlayer?.let { oldPlayer ->
+                playerListener?.let { listener ->
+                    oldPlayer.removeListener(listener)
+                }
+            }
+
+            currentPlayer = player
+
             if (player != null) {
-                // Update UI when player is ready
                 updateMiniPlayerMetadata(player)
-                
+
                 binding.btnMinPlay.setOnClickListener {
                     if (player.isPlaying) player.pause() else player.play()
                 }
-                
-                // Add listener for playback state changes to update icon
-                player.addListener(object : androidx.media3.common.Player.Listener {
+
+                val listener = object : androidx.media3.common.Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         binding.btnMinPlay.setImageResource(
                             if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
@@ -53,8 +62,10 @@ class MiniPlayerFragment : Fragment() {
                              updateMiniPlayerMetadata(player)
                          }
                     }
-                })
-                
+                }
+                playerListener = listener
+                player.addListener(listener)
+
                 binding.root.setOnClickListener {
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
@@ -62,6 +73,8 @@ class MiniPlayerFragment : Fragment() {
                         .addToBackStack(null)
                         .commit()
                 }
+            } else {
+                playerListener = null
             }
         }
     }
@@ -77,6 +90,13 @@ class MiniPlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        currentPlayer?.let { player ->
+            playerListener?.let { listener ->
+                player.removeListener(listener)
+            }
+        }
+        playerListener = null
+        currentPlayer = null
         super.onDestroyView()
         _binding = null
     }

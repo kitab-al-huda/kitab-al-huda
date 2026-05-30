@@ -27,6 +27,10 @@ class QuranFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: SourateViewModel
     private lateinit var adapter: SourateAdapter
+    private lateinit var playerViewModel: com.alfred.kitabalhuda.ui.player.PlayerViewModel
+
+    private var playerListener: androidx.media3.common.Player.Listener? = null
+    private var currentPlayer: androidx.media3.common.Player? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +50,7 @@ class QuranFragment : Fragment() {
         val factory = ViewModelFactory(this, repository)
         viewModel = ViewModelProvider(this, factory).get(SourateViewModel::class.java)
         
-        val playerViewModel = ViewModelProvider(requireActivity()).get(com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java)
+        playerViewModel = ViewModelProvider(requireActivity()).get(com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java)
 
         adapter = SourateAdapter(
             onClick = { sourate ->
@@ -75,15 +79,11 @@ class QuranFragment : Fragment() {
             },
             onLongClick = { sourate ->
                 // Open reciter selection for this specific sourate
-                val sheet = ReciterSelectionBottomSheet.newInstance()
-                sheet.onReciterSelected = { reciter ->
-                    playerViewModel.playSurahWithReciter(
-                        sourate.numero,
-                        sourate.nomArabe,
-                        reciter.id,
-                        reciter.nom
-                    )
-                }
+                val sheet = ReciterSelectionBottomSheet.newInstance(
+                    requestKey = REQUEST_PLAY_SURAH_WITH_RECITER,
+                    sourateNumero = sourate.numero,
+                    sourateNom = sourate.nomArabe
+                )
                 sheet.show(parentFragmentManager, ReciterSelectionBottomSheet.TAG)
             }
         )
@@ -94,6 +94,7 @@ class QuranFragment : Fragment() {
         setupSearch()
         setupReciterSelector()
         setupLocationFilters()
+        setupFragmentResultListeners()
 
         viewModel.sourates.observe(viewLifecycleOwner) { list ->
             adapter.submitList(list)
@@ -101,15 +102,30 @@ class QuranFragment : Fragment() {
 
         // Observe player to show "currently playing" indicator
         playerViewModel.player.observe(viewLifecycleOwner) { player ->
-            player?.addListener(object : androidx.media3.common.Player.Listener {
-                override fun onMediaItemTransition(
-                    mediaItem: androidx.media3.common.MediaItem?,
-                    reason: Int
-                ) {
-                    updateCurrentlyPlaying(mediaItem)
+            currentPlayer?.let { oldPlayer ->
+                playerListener?.let { listener ->
+                    oldPlayer.removeListener(listener)
                 }
-            })
-            updateCurrentlyPlaying(player?.currentMediaItem)
+            }
+
+            currentPlayer = player
+
+            if (player != null) {
+                val listener = object : androidx.media3.common.Player.Listener {
+                    override fun onMediaItemTransition(
+                        mediaItem: androidx.media3.common.MediaItem?,
+                        reason: Int
+                    ) {
+                        updateCurrentlyPlaying(mediaItem)
+                    }
+                }
+                playerListener = listener
+                player.addListener(listener)
+                updateCurrentlyPlaying(player.currentMediaItem)
+            } else {
+                playerListener = null
+                updateCurrentlyPlaying(null)
+            }
         }
     }
 
@@ -135,10 +151,7 @@ class QuranFragment : Fragment() {
         binding.chipReciter.text = currentName
 
         binding.chipReciter.setOnClickListener {
-            val sheet = ReciterSelectionBottomSheet.newInstance()
-            sheet.onReciterSelected = { reciter ->
-                binding.chipReciter.text = reciter.nom
-            }
+            val sheet = ReciterSelectionBottomSheet.newInstance(requestKey = REQUEST_CHANGE_DEFAULT_RECITER)
             sheet.show(parentFragmentManager, ReciterSelectionBottomSheet.TAG)
         }
     }
@@ -156,17 +169,57 @@ class QuranFragment : Fragment() {
 
     private fun updateCurrentlyPlaying(mediaItem: androidx.media3.common.MediaItem?) {
         val title = mediaItem?.mediaMetadata?.title?.toString() ?: ""
+        val surahName = title.substringBefore(" — ")
         // This is a bit hacky, normally we'd have a surah ID in metadata
         // For now, search matches by name
-        viewModel.sourates.value?.find { it.nomArabe == title }?.let { sourate ->
+        viewModel.sourates.value?.find { it.nomArabe == surahName }?.let { sourate ->
             adapter.setCurrentlyPlaying(sourate.numero)
         } ?: run {
             adapter.setCurrentlyPlaying(-1)
         }
     }
 
+    private fun setupFragmentResultListeners() {
+        parentFragmentManager.setFragmentResultListener(
+            REQUEST_CHANGE_DEFAULT_RECITER,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val name = bundle.getString(ReciterSelectionBottomSheet.RESULT_RECITER_NAME) ?: return@setFragmentResultListener
+            binding.chipReciter.text = name
+        }
+
+        parentFragmentManager.setFragmentResultListener(
+            REQUEST_PLAY_SURAH_WITH_RECITER,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val reciterId = bundle.getInt(ReciterSelectionBottomSheet.RESULT_RECITER_ID)
+            val reciterName = bundle.getString(ReciterSelectionBottomSheet.RESULT_RECITER_NAME) ?: return@setFragmentResultListener
+            val sourateNumero = bundle.getInt(ReciterSelectionBottomSheet.RESULT_SOURATE_NUMERO)
+            val sourateNom = bundle.getString(ReciterSelectionBottomSheet.RESULT_SOURATE_NOM) ?: return@setFragmentResultListener
+
+            playerViewModel.playSurahWithReciter(
+                sourateNumero,
+                sourateNom,
+                reciterId,
+                reciterName
+            )
+        }
+    }
+
     override fun onDestroyView() {
+        currentPlayer?.let { player ->
+            playerListener?.let { listener ->
+                player.removeListener(listener)
+            }
+        }
+        playerListener = null
+        currentPlayer = null
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val REQUEST_CHANGE_DEFAULT_RECITER = "changeDefaultReciterRequest"
+        private const val REQUEST_PLAY_SURAH_WITH_RECITER = "playSurahWithReciterRequest"
     }
 }

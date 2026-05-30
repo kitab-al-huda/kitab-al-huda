@@ -27,6 +27,7 @@ class AudioPlayerService : MediaLibraryService() {
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var sleepTimerRunnable: Runnable? = null
+    private var fadeOutTimer: android.os.CountDownTimer? = null
 
     companion object {
         private const val TAG = "AudioPlayerService"
@@ -104,6 +105,8 @@ class AudioPlayerService : MediaLibraryService() {
     private fun cancelSleepTimer() {
         sleepTimerRunnable?.let { handler.removeCallbacks(it) }
         sleepTimerRunnable = null
+        fadeOutTimer?.cancel()
+        fadeOutTimer = null
     }
 
     private fun fadeOutAndStop() {
@@ -113,15 +116,26 @@ class AudioPlayerService : MediaLibraryService() {
         val fadeDuration = 3000L
         val stepDelay = fadeDuration / steps
 
-        object : android.os.CountDownTimer(fadeDuration, stepDelay) {
+        fadeOutTimer?.cancel()
+        val timer = object : android.os.CountDownTimer(fadeDuration, stepDelay) {
             override fun onTick(millisUntilFinished: Long) {
-                player.volume = startVolume * (millisUntilFinished.toFloat() / fadeDuration)
+                try {
+                    player.volume = startVolume * (millisUntilFinished.toFloat() / fadeDuration)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
             override fun onFinish() {
-                player.pause()
-                player.volume = startVolume // Reset volume for next play
+                try {
+                    player.pause()
+                    player.volume = startVolume // Reset volume for next play
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
-        }.start()
+        }
+        fadeOutTimer = timer
+        timer.start()
     }
     
     private inner class LibrarySessionCallback : MediaLibrarySession.Callback {

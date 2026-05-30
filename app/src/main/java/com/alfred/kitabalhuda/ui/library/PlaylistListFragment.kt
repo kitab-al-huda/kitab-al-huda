@@ -35,6 +35,21 @@ class PlaylistListFragment : Fragment() {
         setupRecyclerView()
         setupFab()
         observeViewModel()
+        setupFragmentResultListeners()
+    }
+
+    private fun setupFragmentResultListeners() {
+        parentFragmentManager.setFragmentResultListener(
+            EditPlaylistDialog.REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val id = bundle.getInt(EditPlaylistDialog.RESULT_ID)
+            val newName = bundle.getString(EditPlaylistDialog.RESULT_NAME) ?: return@setFragmentResultListener
+            val newDescription = bundle.getString(EditPlaylistDialog.RESULT_DESCRIPTION)
+
+            val originalPlaylist = adapter.currentList.find { it.id == id } ?: return@setFragmentResultListener
+            viewModel.updatePlaylist(originalPlaylist.copy(name = newName, description = newDescription))
+        }
     }
 
     private fun setupRecyclerView() {
@@ -55,9 +70,7 @@ class PlaylistListFragment : Fragment() {
                 popup.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         1 -> {
-                            val dialog = EditPlaylistDialog(playlist) { newName, newDescription ->
-                                viewModel.updatePlaylist(playlist.copy(name = newName, description = newDescription))
-                            }
+                            val dialog = EditPlaylistDialog.newInstance(playlist.id, playlist.name, playlist.description)
                             dialog.show(parentFragmentManager, EditPlaylistDialog.TAG)
                             true
                         }
@@ -84,9 +97,7 @@ class PlaylistListFragment : Fragment() {
 
     private fun setupFab() {
         binding.fabCreatePlaylist.setOnClickListener {
-            val bottomSheet = CreatePlaylistBottomSheet { name ->
-                viewModel.createPlaylist(name)
-            }
+            val bottomSheet = CreatePlaylistBottomSheet.newInstance()
             bottomSheet.show(parentFragmentManager, CreatePlaylistBottomSheet.TAG)
         }
     }
