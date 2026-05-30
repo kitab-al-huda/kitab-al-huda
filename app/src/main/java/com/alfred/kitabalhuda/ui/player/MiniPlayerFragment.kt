@@ -67,9 +67,13 @@ class MiniPlayerFragment : Fragment() {
                 player.addListener(listener)
 
                 binding.root.setOnClickListener {
+                    // Prevent opening multiple instances of FullPlayerFragment if double-clicked
+                    val existing = parentFragmentManager.findFragmentByTag("FullPlayer")
+                    if (existing != null && existing.isAdded) return@setOnClickListener
+
                     parentFragmentManager.beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
-                        .add(android.R.id.content, FullPlayerFragment())
+                        .add(android.R.id.content, FullPlayerFragment(), "FullPlayer")
                         .addToBackStack(null)
                         .commit()
                 }
