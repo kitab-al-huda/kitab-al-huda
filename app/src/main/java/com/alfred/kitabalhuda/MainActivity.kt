@@ -27,20 +27,6 @@ class MainActivity : AppCompatActivity() {
         // No AppBarConfiguration needed if we want full custom look, or update IDs if we keep it.
         // For now, let's just link it.
         navView.setupWithNavController(navController)
-
-        // Handle back press at the Activity level to ensure FullPlayerFragment is dismissed immediately
-        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val fullPlayer = supportFragmentManager.findFragmentByTag("FullPlayer")
-                if (fullPlayer != null && fullPlayer.isAdded) {
-                    supportFragmentManager.popBackStack()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                    isEnabled = true
-                }
-            }
-        })
         
         // Initialize ViewModel to bind service
         val viewModel = androidx.lifecycle.ViewModelProvider(this)[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]

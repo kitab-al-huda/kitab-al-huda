@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.fragment.app.Fragment
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -16,7 +16,7 @@ import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentFullPlayerBinding
 import java.util.concurrent.TimeUnit
 
-class FullPlayerFragment : Fragment() {
+class FullPlayerFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentFullPlayerBinding? = null
     private val binding get() = _binding!!
@@ -57,6 +57,24 @@ class FullPlayerFragment : Fragment() {
         setupFragmentResultListeners()
     }
 
+    override fun getTheme(): Int = R.style.Theme_KitabAlHuda_BottomSheet
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.let { dialog ->
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let { sheet ->
+                val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(sheet)
+                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+
+                val layoutParams = sheet.layoutParams
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                sheet.layoutParams = layoutParams
+            }
+        }
+    }
+
     override fun onDestroyView() {
         currentPlayer?.let { player ->
             playerListener?.let { listener ->
@@ -76,7 +94,7 @@ class FullPlayerFragment : Fragment() {
 
     private fun setupUI() {
         binding.btnCollapse.setOnClickListener {
-            parentFragmentManager.popBackStack()
+            dismiss()
         }
 
         binding.btnFullPlay.setOnClickListener {

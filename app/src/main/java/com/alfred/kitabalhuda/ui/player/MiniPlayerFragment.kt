@@ -76,11 +76,8 @@ class MiniPlayerFragment : Fragment() {
                     val existing = parentFragmentManager.findFragmentByTag("FullPlayer")
                     if (existing != null && existing.isAdded) return@setOnClickListener
 
-                    parentFragmentManager.beginTransaction()
-                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
-                        .add(android.R.id.content, FullPlayerFragment(), "FullPlayer")
-                        .addToBackStack(null)
-                        .commit()
+                    val fullPlayer = FullPlayerFragment()
+                    fullPlayer.show(parentFragmentManager, "FullPlayer")
                 }
             } else {
                 playerListener = null
