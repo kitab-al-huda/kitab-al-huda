@@ -19,39 +19,41 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:contentDescription="@string/sort"
-        android:src="@drawable/ic_sort_ascending_24"
+        android:src="@drawable/ic_drag_handle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/gray_500" />
 
-    <!-- Track Position Number -->
-    <TextView
-        android:id="@+id/text_track_number"
-        android:layout_width="24dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:gravity="center"
-        android:text="1"
-        android:textColor="@color/gray_500"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/drag_handle"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Waveform animated / static playing indicator -->
-    <ImageView
-        android:id="@+id/icon_now_playing"
+    <!-- Container for Position or Now Playing Indicator -->
+    <FrameLayout
+        android:id="@+id/position_container"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="8dp"
-        android:src="@drawable/ic_audio_bars"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/drag_handle"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/huda_teal" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/text_track_number"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="@color/gray_500"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/icon_now_playing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_audio_bars"
+            android:visibility="gone"
+            app:tint="@color/huda_teal" />
+
+    </FrameLayout>
 
     <!-- Text Information (Vertical Stack) -->
     <LinearLayout
@@ -63,7 +65,7 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/arabic_container"
-        app:layout_constraintStart_toEndOf="@+id/text_track_number"
+        app:layout_constraintStart_toEndOf="@+id/position_container"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Phonetic Name of Sourate -->
