@@ -9,7 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.databinding.FragmentPlaylistDetailBinding
+import com.google.android.material.appbar.AppBarLayout
 
 class PlaylistDetailFragment : Fragment() {
 
@@ -43,18 +45,45 @@ class PlaylistDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this)[PlaylistDetailViewModel::class.java]
-        
+
         setupUI()
         setupRecyclerView()
         observeViewModel()
     }
 
     private fun setupUI() {
-        binding.toolbar.title = playlistName
+        // Set playlist title inside our big header card
+        binding.textHeaderTitle.text = playlistName
+
+        // Standard navigation
         binding.toolbar.setNavigationOnClickListener {
              parentFragmentManager.popBackStack()
         }
-        
+
+        // --- Premium Feature: Dynamic Toolbar Title (Spotify Style) ---
+        // Title in toolbar only shows up when header is fully collapsed
+        binding.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            val isCollapsed = Math.abs(verticalOffset) >= appBarLayout.totalScrollRange
+            if (isCollapsed) {
+                binding.toolbar.title = playlistName
+            } else {
+                binding.toolbar.title = ""
+            }
+        })
+
+        // --- Premium Feature: Animate Floating Play Button on list scroll ---
+        // Hides FAB when scrolling down, shows FAB when scrolling up
+        binding.recyclerTracks.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy > 0 && binding.btnPlayAll.isShown) {
+                    binding.btnPlayAll.hide()
+                } else if (dy < 0 && !binding.btnPlayAll.isShown) {
+                    binding.btnPlayAll.show()
+                }
+            }
+        })
+
         // Play All button - plays entire playlist from beginning
         binding.btnPlayAll.setOnClickListener {
             val tracks = adapter.getCurrentTracks()
@@ -68,7 +97,7 @@ class PlaylistDetailFragment : Fragment() {
 
     private fun setupRecyclerView() {
         val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
-        
+
         adapter = PlaylistDetailAdapter(
             onTrackClick = { track ->
                 // Play from this track onwards
@@ -88,7 +117,7 @@ class PlaylistDetailFragment : Fragment() {
         )
         binding.recyclerTracks.layoutManager = LinearLayoutManager(context)
         binding.recyclerTracks.adapter = adapter
-        
+
         val callback = PlaylistTouchHelperCallback(adapter)
         val touchHelper = ItemTouchHelper(callback)
         touchHelper.attachToRecyclerView(binding.recyclerTracks)
@@ -99,9 +128,13 @@ class PlaylistDetailFragment : Fragment() {
             viewModel.getPlaylistTracks(playlistId).observe(viewLifecycleOwner) { tracks ->
                 adapter.submitList(tracks)
                 binding.textEmptyTracks.visibility = if (tracks.isEmpty()) View.VISIBLE else View.GONE
+
+                // Set total counts in our header dynamically
+                val countText = if (tracks.size == 1) "1 sourate" else "${tracks.size} sourates"
+                binding.textHeaderTracksCount.text = countText
             }
         }
-        
+
         // Observe player to update currently playing indicator
         val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
         playerViewModel.player.observe(viewLifecycleOwner) { player ->

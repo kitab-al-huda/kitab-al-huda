@@ -159,6 +159,7 @@ Kitab al-Huda/
 │   │   │       │   ├── ic_account_black_24dp.xml
 │   │   │       │   ├── ic_add_24.xml
 │   │   │       │   ├── ic_arrow_back.xml
+│   │   │       │   ├── ic_close.xml
 │   │   │       │   ├── ic_audio_bars.xml
 │   │   │       │   ├── ic_bookmark_add_24.xml
 │   │   │       │   ├── ic_dashboard_24.xml

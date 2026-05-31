@@ -2,79 +2,131 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/track_item_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/bg_card"
+    android:backgroundTint="@android:color/transparent"
     android:padding="12dp">
 
+    <!-- Left Drag Handle -->
     <ImageView
         android:id="@+id/drag_handle"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:contentDescription="@string/sort"
-        android:src="@drawable/ic_sort_ascending_24" 
+        android:src="@drawable/ic_sort_ascending_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/gray_500" />    
-    <!-- Using sort icon as drag handle for now, or menu/burger icon -->
+        app:tint="@color/gray_500" />
 
+    <!-- Track Position Number -->
     <TextView
         android:id="@+id/text_track_number"
-        android:layout_width="wrap_content"
+        android:layout_width="24dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
         android:text="1"
         android:textColor="@color/gray_500"
         android:textSize="14sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/drag_handle"
         app:layout_constraintTop_toTopOf="parent" />
-    
+
+    <!-- Waveform animated / static playing indicator -->
     <ImageView
         android:id="@+id/icon_now_playing"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="12dp"
-        android:src="@android:drawable/ic_media_play"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_audio_bars"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/drag_handle"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/huda_teal" />
 
+    <!-- Text Information (Vertical Stack) -->
     <LinearLayout
+        android:id="@+id/text_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="12dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btn_item_options"
+        app:layout_constraintEnd_toStartOf="@+id/arabic_container"
         app:layout_constraintStart_toEndOf="@+id/text_track_number"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Phonetic Name of Sourate -->
         <TextView
             android:id="@+id/text_track_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            tools:text="Surah Al-Mulk"
+            tools:text="Al-Fatihah"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
+        <!-- Rich Metadata (Reciter name & translation stats) -->
         <TextView
             android:id="@+id/text_track_artist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            tools:text="Abdulbasit"
+            tools:text="Mishary Al-Afasy • 7 versets"
             android:textColor="@color/gray_500"
             android:textSize="12sp" />
+
     </LinearLayout>
 
+    <!-- Right Side: Arabic Text & Track Duration Stack -->
+    <LinearLayout
+        android:id="@+id/arabic_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        android:gravity="end"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_item_options"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Arabic Calligraphy Name -->
+        <TextView
+            android:id="@+id/text_track_arabic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="الفاتحة"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <!-- Duration formatted in MM:SS -->
+        <TextView
+            android:id="@+id/text_track_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            tools:text="02:14"
+            android:textColor="@color/gray_500"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <!-- Quick option vertical dots button -->
     <ImageButton
         android:id="@+id/btn_item_options"
         android:layout_width="32dp"

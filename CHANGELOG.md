@@ -8,6 +8,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.3.0] — 2026-05-31
+
+### Added
+- **System Media Integration Fix**: Implemented `onGetLibraryRoot` callback in `AudioPlayerService`'s session. This allows external media controllers like Android System UI (`com.android.systemui`) to connect successfully, enabling seamless lock screen media controls, quick settings panel integration, and background audio resumption support.
+- **Close Icon Resource**: Added `ic_close.xml` vector drawable representing a standard Material Design close ("X") icon.
+
+### Changed
+- **Modal Player Refactoring (BottomSheet)**: Refactored `FullPlayerFragment` to extend `BottomSheetDialogFragment` instead of a manual fragment layout transaction. This places the player overlay inside its own system dialog window, natively resolving all priority back-press conflicts with the underlying `NavController` back stack and enabling beautiful swipe-to-dismiss gesture support.
+- **Improved Player UI Layout**: Updated the player's top-left button to use the new close icon (`ic_close.xml`) instead of the back arrow to match its modal bottom-sheet nature.
+- **Lifecycle & Fragment Safety**: Refactored `AddToPlaylistBottomSheet`, `CreatePlaylistBottomSheet`, `EditPlaylistDialog`, and `ReciterSelectionBottomSheet` to utilize the modern `FragmentResult` API and argument factories (`newInstance(bundle)`). This ensures robust data passing and completely prevents state loss or crashes on device rotation and process death.
+- **Robust Player Debouncing**: Integrated a 1000ms click-debounce cooldown on the mini-player to prevent duplicate fragment transactions from opening multiple players on rapid clicks.
+- **Code Hardening**: Cleaned up Media3 listener leakage on view destruction in `PlaylistDetailFragment` and modernized `HadithManager` utilizing Kotlin's `use` block for safe resource closure.
+
+---
+
 ## [1.2.0] — 2026-05-23
 
 ### Added
