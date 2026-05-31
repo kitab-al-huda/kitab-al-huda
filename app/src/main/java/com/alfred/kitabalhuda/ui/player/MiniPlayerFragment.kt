@@ -14,6 +14,7 @@ class MiniPlayerFragment : Fragment() {
 
     private var playerListener: androidx.media3.common.Player.Listener? = null
     private var currentPlayer: androidx.media3.common.Player? = null
+    private var lastClickTime = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,6 +68,10 @@ class MiniPlayerFragment : Fragment() {
                 player.addListener(listener)
 
                 binding.root.setOnClickListener {
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastClickTime < 1000) return@setOnClickListener
+                    lastClickTime = currentTime
+
                     // Prevent opening multiple instances of FullPlayerFragment if double-clicked
                     val existing = parentFragmentManager.findFragmentByTag("FullPlayer")
                     if (existing != null && existing.isAdded) return@setOnClickListener
