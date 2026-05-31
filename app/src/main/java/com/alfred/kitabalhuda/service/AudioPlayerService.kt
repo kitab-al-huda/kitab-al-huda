@@ -7,6 +7,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.media3.session.LibraryResult
 import com.alfred.kitabalhuda.repository.MessengerRepository
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -150,6 +151,25 @@ class AudioPlayerService : MediaLibraryService() {
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(sessionCommands)
                 .build()
+        }
+
+        override fun onGetLibraryRoot(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val rootItem = MediaItem.Builder()
+                .setMediaId("ROOT_ID")
+                .setMediaMetadata(
+                    androidx.media3.common.MediaMetadata.Builder()
+                        .setIsPlayable(false)
+                        .setIsBrowsable(true)
+                        .setFolderType(androidx.media3.common.MediaMetadata.FOLDER_TYPE_MIXED)
+                        .setTitle("KitabAlHudaRoot")
+                        .build()
+                )
+                .build()
+            return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params))
         }
 
         override fun onCustomCommand(
