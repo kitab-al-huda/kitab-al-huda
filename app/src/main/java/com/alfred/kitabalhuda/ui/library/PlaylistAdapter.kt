@@ -12,7 +12,7 @@ import com.alfred.kitabalhuda.databinding.ItemPlaylistBinding
 class PlaylistAdapter(
     private val onPlaylistClick: (PlaylistEntity) -> Unit,
     private val onPlaylistOptionsClick: (PlaylistEntity) -> Unit
-) : ListAdapter<PlaylistEntity, PlaylistAdapter.PlaylistViewHolder>(PlaylistDiffCallback()) {
+) : ListAdapter<com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount, PlaylistAdapter.PlaylistViewHolder>(PlaylistDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
         val binding = ItemPlaylistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -20,33 +20,43 @@ class PlaylistAdapter(
     }
 
     override fun onBindViewHolder(holder: PlaylistViewHolder, position: Int) {
-        val playlist = getItem(position)
-        holder.bind(playlist)
+        val playlistWithCount = getItem(position)
+        holder.bind(playlistWithCount)
     }
 
     inner class PlaylistViewHolder(private val binding: ItemPlaylistBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(playlist: PlaylistEntity) {
+        fun bind(playlistWithCount: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount) {
+            val playlist = playlistWithCount.playlist
             binding.textPlaylistName.text = playlist.name
-            binding.textPlaylistCount.text = binding.root.context.getString(com.alfred.kitabalhuda.R.string.tracks_count, 0)
-            
+            binding.textPlaylistCount.text = binding.root.context.getString(
+                com.alfred.kitabalhuda.R.string.tracks_count,
+                playlistWithCount.trackCount
+            )
+
             // TODO: Load cover image if available
-            
+
             binding.root.setOnClickListener {
                 onPlaylistClick(playlist)
             }
-            
+
             binding.btnPlaylistOptions.setOnClickListener {
                 onPlaylistOptionsClick(playlist)
             }
         }
     }
 
-    class PlaylistDiffCallback : DiffUtil.ItemCallback<PlaylistEntity>() {
-        override fun areItemsTheSame(oldItem: PlaylistEntity, newItem: PlaylistEntity): Boolean {
-            return oldItem.id == newItem.id
+    class PlaylistDiffCallback : DiffUtil.ItemCallback<com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount>() {
+        override fun areItemsTheSame(
+            oldItem: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount,
+            newItem: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount
+        ): Boolean {
+            return oldItem.playlist.id == newItem.playlist.id
         }
 
-        override fun areContentsTheSame(oldItem: PlaylistEntity, newItem: PlaylistEntity): Boolean {
+        override fun areContentsTheSame(
+            oldItem: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount,
+            newItem: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount
+        ): Boolean {
             return oldItem == newItem
         }
     }

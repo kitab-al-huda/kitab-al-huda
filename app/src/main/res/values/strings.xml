@@ -86,6 +86,8 @@
     <string name="tracks_count">%d مقاطع</string>
 
     <string name="coming_soon">قريباً</string>
+    <string name="surah_unavailable">غير متوفر لهذا القارئ</string>
+    <string name="badge_free">مجاني</string>
 
     <!-- Reciter Selection -->
     <string name="choose_reciter">اختر القارئ</string>

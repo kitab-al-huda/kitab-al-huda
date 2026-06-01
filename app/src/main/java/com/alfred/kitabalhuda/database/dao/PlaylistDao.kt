@@ -15,6 +15,15 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists ORDER BY createdAt DESC")
     fun getAllPlaylists(): LiveData<List<PlaylistEntity>>
 
+    @Query("""
+        SELECT p.*, COUNT(pi.id) as trackCount
+        FROM playlists p
+        LEFT JOIN playlist_items pi ON p.id = pi.playlistId
+        GROUP BY p.id
+        ORDER BY p.createdAt DESC
+    """)
+    fun getAllPlaylistsWithCount(): LiveData<List<PlaylistWithCount>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun createPlaylist(playlist: PlaylistEntity): Long
 
@@ -82,5 +91,10 @@ interface PlaylistDao {
         @Embedded(prefix = "audio_") val audio: AudioEntity,
         @Embedded(prefix = "sourate_") val sourate: SourateEntity,
         @Embedded(prefix = "reciteur_") val reciteur: ReciteurEntity
+    )
+
+    data class PlaylistWithCount(
+        @Embedded val playlist: PlaylistEntity,
+        val trackCount: Int
     )
 }

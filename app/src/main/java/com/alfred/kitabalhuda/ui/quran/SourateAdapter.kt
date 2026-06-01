@@ -14,9 +14,11 @@ class SourateAdapter(
 
     private var sourates: List<SourateEntity> = emptyList()
     private var currentlyPlayingSurahNumber: Int = -1
+    private var availableSurahNumbers: Set<Int> = emptySet()
 
-    fun submitList(list: List<SourateEntity>) {
+    fun submitList(list: List<SourateEntity>, availableSurahs: Set<Int> = emptySet()) {
         sourates = list
+        availableSurahNumbers = availableSurahs
         notifyDataSetChanged()
     }
 
@@ -50,27 +52,40 @@ class SourateAdapter(
             binding.textNumero.text = sourate.numero.toString()
             binding.textNomArabe.text = sourate.nomArabe
             binding.textNomPhonetique.text = sourate.nomPhonetique
-            
+
             val context = binding.root.context
-            val placeResId = if (sourate.lieuRevelation.equals("Mecca", ignoreCase = true) || 
+            val placeResId = if (sourate.lieuRevelation.equals("Mecca", ignoreCase = true) ||
                                  sourate.lieuRevelation.equals("Meccan", ignoreCase = true) ||
                                  sourate.lieuRevelation.equals("Mecquoise", ignoreCase = true)) {
                 com.alfred.kitabalhuda.R.string.filter_mecca
             } else {
                 com.alfred.kitabalhuda.R.string.filter_medina
             }
-            
+
             val place = context.getString(placeResId)
             val ayahs = context.getString(com.alfred.kitabalhuda.R.string.ayahs_count)
-            binding.textInfo.text = "$place • ${sourate.nombreVersets} $ayahs"
 
-            // Show animation if currently playing
-            if (sourate.numero == currentlyPlayingSurahNumber) {
-                binding.imgPlaying.visibility = android.view.View.VISIBLE
-                binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.gray_800))
-            } else {
+            val isAvailable = availableSurahNumbers.isEmpty() || availableSurahNumbers.contains(sourate.numero)
+
+            if (!isAvailable) {
+                // Dim the card and show as unavailable
+                binding.root.alpha = 0.4f
+                binding.textInfo.text = context.getString(com.alfred.kitabalhuda.R.string.surah_unavailable)
                 binding.imgPlaying.visibility = android.view.View.GONE
                 binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.primary_dark))
+            } else {
+                // Render normally
+                binding.root.alpha = 1.0f
+                binding.textInfo.text = "$place • ${sourate.nombreVersets} $ayahs"
+
+                // Show animation if currently playing
+                if (sourate.numero == currentlyPlayingSurahNumber) {
+                    binding.imgPlaying.visibility = android.view.View.VISIBLE
+                    binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.gray_800))
+                } else {
+                    binding.imgPlaying.visibility = android.view.View.GONE
+                    binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.primary_dark))
+                }
             }
 
             binding.root.setOnClickListener { onClick(sourate) }

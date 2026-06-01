@@ -31,6 +31,7 @@ class QuranFragment : Fragment() {
 
     private var playerListener: androidx.media3.common.Player.Listener? = null
     private var currentPlayer: androidx.media3.common.Player? = null
+    private var availableSurahNumbers: Set<Int> = emptySet()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,8 +55,32 @@ class QuranFragment : Fragment() {
 
         adapter = SourateAdapter(
             onClick = { sourate ->
-                Toast.makeText(context, "Playing: ${sourate.nomArabe}", Toast.LENGTH_SHORT).show()
-                playerViewModel.playSurah(sourate.numero, sourate.nomArabe)
+                val app = requireActivity().application as KitabAlHudaApplication
+                val audioDao = app.database.audioDao()
+                lifecycleScope.launch {
+                    val selectedReciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
+                    val audioExists = withContext(Dispatchers.IO) {
+                        audioDao.getAudioForSurahAndReciter(selectedReciterId, sourate.numero) != null
+                    }
+                    if (audioExists) {
+                        Toast.makeText(context, "Playing: ${sourate.nomArabe}", Toast.LENGTH_SHORT).show()
+                        playerViewModel.playSurah(sourate.numero, sourate.nomArabe)
+                    } else {
+                        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("سورة غير متوفرة")
+                            .setMessage("هذه السورة غير متوفرة حالياً لهذا القارئ بصيغة مجانية (zero-rated). هل تود الاستماع إليها بصوت القارئ مشاري بن راشد العفاسي؟")
+                            .setPositiveButton("الاستماع بصوت العفاسي") { _, _ ->
+                                playerViewModel.playSurahWithReciter(
+                                    sourate.numero,
+                                    sourate.nomArabe,
+                                    1, // Al-Afasy ID
+                                    "مشاري بن راشد العفاسي"
+                                )
+                            }
+                            .setNegativeButton("إلغاء", null)
+                            .show()
+                    }
+                }
             },
             onOptionsClick = { sourate ->
                 // Find the Audio ID for this surah + selected reciter
@@ -97,8 +122,9 @@ class QuranFragment : Fragment() {
         setupFragmentResultListeners()
 
         viewModel.sourates.observe(viewLifecycleOwner) { list ->
-            adapter.submitList(list)
+            adapter.submitList(list, availableSurahNumbers)
         }
+        updateAvailableSurahs()
 
         // Observe player to show "currently playing" indicator
         playerViewModel.player.observe(viewLifecycleOwner) { player ->
@@ -179,6 +205,20 @@ class QuranFragment : Fragment() {
         }
     }
 
+    private fun updateAvailableSurahs() {
+        val app = requireActivity().application as KitabAlHudaApplication
+        val audioDao = app.database.audioDao()
+        lifecycleScope.launch {
+            val reciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
+            availableSurahNumbers = withContext(Dispatchers.IO) {
+                audioDao.getAudiosByReciteurDirect(reciterId).map { it.sourateNumero }.toSet()
+            }
+            viewModel.sourates.value?.let { list ->
+                adapter.submitList(list, availableSurahNumbers)
+            }
+        }
+    }
+
     private fun setupFragmentResultListeners() {
         parentFragmentManager.setFragmentResultListener(
             REQUEST_CHANGE_DEFAULT_RECITER,
@@ -186,6 +226,7 @@ class QuranFragment : Fragment() {
         ) { _, bundle ->
             val name = bundle.getString(ReciterSelectionBottomSheet.RESULT_RECITER_NAME) ?: return@setFragmentResultListener
             binding.chipReciter.text = name
+            updateAvailableSurahs()
         }
 
         parentFragmentManager.setFragmentResultListener(

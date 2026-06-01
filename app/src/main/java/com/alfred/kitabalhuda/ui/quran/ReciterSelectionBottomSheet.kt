@@ -124,11 +124,15 @@ class ReciterSelectionAdapter(
             binding.textReciterDesc.text = reciter.description ?: ""
             binding.textReciterDesc.visibility =
                 if (reciter.description.isNullOrEmpty()) View.GONE else View.VISIBLE
-            
+
+            // Show Zero-Rated badge for Al-Afasy (ID 1) and El-Minshawi (ID 6)
+            val isZeroRated = reciter.id == 1 || reciter.id == 6
+            binding.badgeZeroRated.visibility = if (isZeroRated) View.VISIBLE else View.GONE
+
             // Show checkmark for selected reciter
             binding.iconCheck.visibility =
                 if (reciter.id == selectedId) View.VISIBLE else View.GONE
-            
+
             binding.root.setOnClickListener { onItemClick(reciter) }
         }
     }

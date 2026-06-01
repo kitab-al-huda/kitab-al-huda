@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 class PlaylistRepository(private val playlistDao: PlaylistDao) {
 
     val allPlaylists: LiveData<List<PlaylistEntity>> = playlistDao.getAllPlaylists()
+    val allPlaylistsWithCount: LiveData<List<PlaylistDao.PlaylistWithCount>> = playlistDao.getAllPlaylistsWithCount()
 
     suspend fun createPlaylist(name: String, description: String? = null): Long {
         return withContext(Dispatchers.IO) {

@@ -47,8 +47,8 @@ class PlaylistListFragment : Fragment() {
             val newName = bundle.getString(EditPlaylistDialog.RESULT_NAME) ?: return@setFragmentResultListener
             val newDescription = bundle.getString(EditPlaylistDialog.RESULT_DESCRIPTION)
 
-            val originalPlaylist = adapter.currentList.find { it.id == id } ?: return@setFragmentResultListener
-            viewModel.updatePlaylist(originalPlaylist.copy(name = newName, description = newDescription))
+            val originalPlaylistWithCount = adapter.currentList.find { it.playlist.id == id } ?: return@setFragmentResultListener
+            viewModel.updatePlaylist(originalPlaylistWithCount.playlist.copy(name = newName, description = newDescription))
         }
     }
 
@@ -62,7 +62,12 @@ class PlaylistListFragment : Fragment() {
                     .commit()
             },
             onPlaylistOptionsClick = { playlist ->
-                val anchor = binding.recyclerPlaylists.findViewHolderForAdapterPosition(adapter.currentList.indexOf(playlist))?.itemView?.findViewById<View>(R.id.btn_playlist_options) ?: requireView()
+                val index = adapter.currentList.indexOfFirst { it.playlist.id == playlist.id }
+                val anchor = if (index != -1) {
+                    binding.recyclerPlaylists.findViewHolderForAdapterPosition(index)?.itemView?.findViewById<View>(R.id.btn_playlist_options) ?: requireView()
+                } else {
+                    requireView()
+                }
                 val popup = androidx.appcompat.widget.PopupMenu(requireContext(), anchor)
                 popup.menu.add(0, 1, 0, R.string.edit_playlist)
                 popup.menu.add(0, 2, 1, R.string.delete)
@@ -103,9 +108,9 @@ class PlaylistListFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.allPlaylists.observe(viewLifecycleOwner) { playlists ->
-            adapter.submitList(playlists)
-            binding.textEmptyState.visibility = if (playlists.isEmpty()) View.VISIBLE else View.GONE
+        viewModel.allPlaylistsWithCount.observe(viewLifecycleOwner) { playlistsWithCount ->
+            adapter.submitList(playlistsWithCount)
+            binding.textEmptyState.visibility = if (playlistsWithCount.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 

@@ -14,12 +14,14 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private val repository: PlaylistRepository
 
     val allPlaylists: LiveData<List<PlaylistEntity>>
+    val allPlaylistsWithCount: LiveData<List<com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount>>
 
     init {
         val database = (application as KitabAlHudaApplication).database
         // TODO: We should use dependency injection properly, but for now manual injection
         repository = PlaylistRepository(database.playlistDao())
         allPlaylists = repository.allPlaylists
+        allPlaylistsWithCount = repository.allPlaylistsWithCount
     }
 
     fun createPlaylist(name: String) {
