@@ -78,13 +78,10 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
 
         binding.btnRepeatMode.setOnClickListener {
             val currentMode = viewModel.playbackMode.value ?: PlaybackMode.SEQUENTIAL
-            val newMode = when (currentMode) {
-                PlaybackMode.SEQUENTIAL       -> PlaybackMode.REPEAT_ALL
-                PlaybackMode.REPEAT_ALL       -> PlaybackMode.REPEAT_ONE
-                PlaybackMode.REPEAT_ONE       -> PlaybackMode.PLAY_CURRENT_AND_STOP
-                PlaybackMode.PLAY_CURRENT_AND_STOP -> PlaybackMode.SEQUENTIAL
+            val bottomSheet = PlaybackModeBottomSheet(currentMode) { mode ->
+                viewModel.setPlaybackMode(mode)
             }
-            viewModel.setPlaybackMode(newMode)
+            bottomSheet.show(parentFragmentManager, PlaybackModeBottomSheet.TAG)
         }
 
         binding.btnShuffle.setOnClickListener {

@@ -49,16 +49,15 @@
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress_min_loading"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:indeterminate="true"
             android:visibility="gone"
             app:indicatorColor="@color/huda_gold"
             app:indicatorSize="28dp"
-            app:layout_constraintBottom_toBottomOf="@+id/btn_min_play"
-            app:layout_constraintEnd_toEndOf="@+id/btn_min_play"
-            app:layout_constraintStart_toStartOf="@+id/btn_min_play"
-            app:layout_constraintTop_toTopOf="@+id/btn_min_play"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:trackThickness="3dp" />
 
         <ImageButton

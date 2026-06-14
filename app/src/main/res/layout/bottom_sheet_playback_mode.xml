@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/playback_mode_title"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/mode_sequential"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/mode_sequential"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/mode_repeat_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/mode_repeat_all"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/mode_repeat_one"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/mode_repeat_one"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/mode_play_once_stop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/mode_play_once_stop"
+        android:background="?attr/selectableItemBackground" />
+
+</LinearLayout>

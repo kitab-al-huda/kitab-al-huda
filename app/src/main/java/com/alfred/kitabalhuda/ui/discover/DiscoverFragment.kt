@@ -47,6 +47,17 @@ class DiscoverFragment : Fragment() {
         
         // Setup Resume Reading Card
         setupResumeReading()
+
+        // Adjust bottom padding when mini player appears/disappears
+        val playerViewModel = androidx.lifecycle.ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
+        playerViewModel.playerUiState.observe(viewLifecycleOwner) { state ->
+            val paddingBottom = if (state !is com.alfred.kitabalhuda.ui.player.PlayerUiState.Idle) {
+                resources.getDimensionPixelSize(R.dimen.mini_player_bottom_padding)
+            } else {
+                0
+            }
+            binding.scrollContent.setPadding(0, 0, 0, paddingBottom)
+        }
     }
 
     private fun setupResumeReading() {

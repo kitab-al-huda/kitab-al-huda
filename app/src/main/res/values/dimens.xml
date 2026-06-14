@@ -5,4 +5,5 @@
 
     <dimen name="carousel_dot_size">8dp</dimen>
     <dimen name="carousel_dot_margin">4dp</dimen>
+    <dimen name="mini_player_bottom_padding">80dp</dimen>
 </resources>

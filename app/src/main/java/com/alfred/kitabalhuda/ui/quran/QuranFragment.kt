@@ -137,6 +137,12 @@ class QuranFragment : Fragment() {
                     adapter.setCurrentlyPlaying(-1)
                 }
             }
+            val paddingBottom = if (state !is com.alfred.kitabalhuda.ui.player.PlayerUiState.Idle) {
+                resources.getDimensionPixelSize(R.dimen.mini_player_bottom_padding)
+            } else {
+                0
+            }
+            binding.recyclerView.setPadding(0, 0, 0, paddingBottom)
         }
     }
 

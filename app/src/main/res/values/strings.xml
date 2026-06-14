@@ -93,6 +93,13 @@
     <string name="choose_reciter">اختر القارئ</string>
     <string name="current_reciter">القارئ: %1$s</string>
 
+    <!-- Playback Modes -->
+    <string name="playback_mode_title">وضع التشغيل</string>
+    <string name="mode_sequential">تشغيل متتابع</string>
+    <string name="mode_repeat_all">تكرار الكل</string>
+    <string name="mode_repeat_one">تكرار السورة</string>
+    <string name="mode_play_once_stop">تشغيل السورة الحالية والتوقف</string>
+
     <!-- Internal App Configurations -->
     <string name="app_build_signature">K1tab@Huda#2026</string>
 </resources>
