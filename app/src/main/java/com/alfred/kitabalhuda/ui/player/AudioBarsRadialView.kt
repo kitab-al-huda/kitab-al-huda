@@ -4,6 +4,8 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -16,7 +18,6 @@ class AudioBarsRadialView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private var innerRadius = 0f
     private val density = context.resources.displayMetrics.density
 
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -25,9 +26,10 @@ class AudioBarsRadialView @JvmOverloads constructor(
         alpha = 180
     }
 
+
     private val barCount = 16
-    private val barWidth = 3f * density
-    private val barMaxHeight = 10f * density
+    private val barWidth = 4.5f * density
+    private val barMaxHeight = 8f * density
     private val cornerRadius = barWidth / 2f
 
     private val phases = FloatArray(barCount) { Random.nextFloat() * 360f }
@@ -36,21 +38,45 @@ class AudioBarsRadialView @JvmOverloads constructor(
 
     private var animator: ValueAnimator? = null
     private var startTime = 0L
+    private var frozenTime = -1f
+
+    private val outerRadii = floatArrayOf(
+        cornerRadius, cornerRadius, cornerRadius, cornerRadius,
+        0f, 0f, 0f, 0f
+    )
+    private val barPath = Path()
+    private val barRect = RectF()
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        innerRadius = minOf(w, h) / 2f - barMaxHeight
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (innerRadius <= 0f) return
 
         val cx = width / 2f
         val cy = height / 2f
-        val angleStep = 360f / barCount
-        val time = if (startTime > 0) (System.nanoTime() - startTime) / 1_000_000_000f else 0f
+        val half = minOf(cx, cy)
+        if (half <= 0f) return
 
+        val innerRadius = half
+        val containerRadius = innerRadius + barMaxHeight
+        val angleStep = 360f / barCount
+        val time = if (frozenTime >= 0f) frozenTime
+            else if (startTime > 0) (System.nanoTime() - startTime) / 1_000_000_000f
+            else 0f
+
+        // Clip to circular container
+        canvas.save()
+        val circlePath = Path().apply {
+            addCircle(cx, cy, containerRadius, Path.Direction.CW)
+        }
+        canvas.clipPath(circlePath)
+
+        // Subtle circle fill
+        canvas.drawColor(0x0803DAC5.toInt())
+
+        // Draw bars inside the circle
         canvas.save()
         canvas.translate(cx, cy)
 
@@ -63,21 +89,21 @@ class AudioBarsRadialView @JvmOverloads constructor(
             canvas.rotate(angleStep * i)
 
             val halfW = barWidth / 2f
-            canvas.drawRoundRect(
-                -halfW, -innerRadius - height,
-                halfW, -innerRadius,
-                cornerRadius, cornerRadius,
-                barPaint
-            )
+            barRect.set(-halfW, -innerRadius - height, halfW, -innerRadius)
+            barPath.rewind()
+            barPath.addRoundRect(barRect, outerRadii, Path.Direction.CW)
+            canvas.drawPath(barPath, barPaint)
             canvas.restore()
         }
 
+        canvas.restore()
         canvas.restore()
     }
 
     fun startAnim() {
         if (visibility != VISIBLE) visibility = VISIBLE
         if (animator?.isRunning == true) return
+        frozenTime = -1f
         startTime = System.nanoTime()
         animator = ValueAnimator.ofFloat(0f, 1f).apply {
             repeatCount = ValueAnimator.INFINITE
@@ -88,8 +114,18 @@ class AudioBarsRadialView @JvmOverloads constructor(
         }
     }
 
+    fun pauseAnim() {
+        if (startTime > 0) {
+            frozenTime = (System.nanoTime() - startTime) / 1_000_000_000f
+        }
+        animator?.cancel()
+        animator = null
+        invalidate()
+    }
+
     fun stopAnim() {
         visibility = GONE
+        frozenTime = -1f
         animator?.cancel()
         animator = null
         invalidate()

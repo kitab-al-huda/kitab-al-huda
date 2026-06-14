@@ -137,10 +137,10 @@ class PlaylistDetailFragment : Fragment() {
         playerViewModel.playerUiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is com.alfred.kitabalhuda.ui.player.PlayerUiState.Playing -> {
-                    adapter.setCurrentlyPlaying(state.mediaId)
+                    adapter.setCurrentlyPlaying(state.mediaId, true)
                 }
                 is com.alfred.kitabalhuda.ui.player.PlayerUiState.Paused -> {
-                    adapter.setCurrentlyPlaying(state.mediaId)
+                    adapter.setCurrentlyPlaying(state.mediaId, false)
                 }
                 else -> {
                     adapter.setCurrentlyPlaying(null)

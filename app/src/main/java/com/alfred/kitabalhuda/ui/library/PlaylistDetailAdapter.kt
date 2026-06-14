@@ -15,6 +15,7 @@ class PlaylistDetailAdapter(
 
     private val items = mutableListOf<PlaylistDao.PlaylistTrack>()
     private var currentlyPlayingUrl: String? = null
+    private var isCurrentlyPlaying: Boolean = false
 
     fun submitList(newItems: List<PlaylistDao.PlaylistTrack>) {
         items.clear()
@@ -22,8 +23,9 @@ class PlaylistDetailAdapter(
         notifyDataSetChanged()
     }
 
-    fun setCurrentlyPlaying(url: String?) {
+    fun setCurrentlyPlaying(url: String?, isPlaying: Boolean = true) {
         currentlyPlayingUrl = url
+        this.isCurrentlyPlaying = isPlaying
         notifyDataSetChanged()
     }
 
@@ -90,7 +92,11 @@ class PlaylistDetailAdapter(
             // Setup now-playing and highlight states
             if (isPlaying) {
                 // Show radial bars, hide standard number
-                binding.audioBarsView.startAnim()
+                if (this@PlaylistDetailAdapter.isCurrentlyPlaying) {
+                    binding.audioBarsView.startAnim()
+                } else {
+                    binding.audioBarsView.pauseAnim()
+                }
                 binding.textTrackNumber.visibility = android.view.View.GONE
 
                 // Color highlight

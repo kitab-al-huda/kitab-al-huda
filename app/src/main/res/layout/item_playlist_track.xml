@@ -11,6 +11,7 @@
     android:layout_marginBottom="4dp"
     android:background="@drawable/bg_card"
     android:backgroundTint="@android:color/transparent"
+    android:clipChildren="false"
     android:padding="12dp">
 
     <!-- Left Drag Handle -->
@@ -28,9 +29,11 @@
     <!-- Container for Position or Now Playing Indicator -->
     <FrameLayout
         android:id="@+id/position_container"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:layout_marginStart="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/drag_handle"
         app:layout_constraintTop_toTopOf="parent">

@@ -128,10 +128,10 @@ class QuranFragment : Fragment() {
         playerViewModel.playerUiState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is com.alfred.kitabalhuda.ui.player.PlayerUiState.Playing -> {
-                    adapter.setCurrentlyPlaying(state.surahNumber)
+                    adapter.setCurrentlyPlaying(state.surahNumber, true)
                 }
                 is com.alfred.kitabalhuda.ui.player.PlayerUiState.Paused -> {
-                    adapter.setCurrentlyPlaying(state.surahNumber)
+                    adapter.setCurrentlyPlaying(state.surahNumber, false)
                 }
                 else -> {
                     adapter.setCurrentlyPlaying(-1)

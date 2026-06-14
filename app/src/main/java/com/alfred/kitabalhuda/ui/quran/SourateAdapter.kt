@@ -14,6 +14,7 @@ class SourateAdapter(
 
     private var sourates: List<SourateEntity> = emptyList()
     private var currentlyPlayingSurahNumber: Int = -1
+    private var isCurrentlyPlaying: Boolean = false
     private var availableSurahNumbers: Set<Int> = emptySet()
 
     fun submitList(list: List<SourateEntity>, availableSurahs: Set<Int> = emptySet()) {
@@ -22,9 +23,10 @@ class SourateAdapter(
         notifyDataSetChanged()
     }
 
-    fun setCurrentlyPlaying(numero: Int) {
-        if (currentlyPlayingSurahNumber != numero) {
+    fun setCurrentlyPlaying(numero: Int, isPlaying: Boolean = true) {
+        if (currentlyPlayingSurahNumber != numero || this.isCurrentlyPlaying != isPlaying) {
             currentlyPlayingSurahNumber = numero
+            this.isCurrentlyPlaying = isPlaying
             notifyDataSetChanged()
         }
     }
@@ -80,7 +82,11 @@ class SourateAdapter(
 
                 // Show radial bars animation if currently playing
                 if (sourate.numero == currentlyPlayingSurahNumber) {
-                    binding.audioBarsView.startAnim()
+                    if (isCurrentlyPlaying) {
+                        binding.audioBarsView.startAnim()
+                    } else {
+                        binding.audioBarsView.pauseAnim()
+                    }
                     binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.gray_800))
                 } else {
                     binding.audioBarsView.stopAnim()
