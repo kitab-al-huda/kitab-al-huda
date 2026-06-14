@@ -1,4 +1,4 @@
-package com.alfred.kitabalhuda.util
+package com.alfred.kitabalhuda.utils
 
 import android.content.Context
 import android.content.SharedPreferences

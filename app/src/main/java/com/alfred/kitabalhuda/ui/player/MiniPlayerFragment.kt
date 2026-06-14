@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentMiniPlayerBinding
 
 class MiniPlayerFragment : Fragment() {
@@ -50,7 +51,7 @@ class MiniPlayerFragment : Fragment() {
                 val listener = object : androidx.media3.common.Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         binding.btnMinPlay.setImageResource(
-                            if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
+                            if (isPlaying) R.drawable.ic_media_pause else R.drawable.ic_media_play
                         )
                     }
 
@@ -81,6 +82,30 @@ class MiniPlayerFragment : Fragment() {
                 }
             } else {
                 playerListener = null
+            }
+        }
+
+        viewModel.playerUiState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is PlayerUiState.Loading -> {
+                    binding.progressMinLoading.visibility = View.VISIBLE
+                    binding.btnMinPlay.visibility = View.GONE
+                }
+                is PlayerUiState.Playing -> {
+                    binding.progressMinLoading.visibility = View.GONE
+                    binding.btnMinPlay.visibility = View.VISIBLE
+                    binding.btnMinPlay.setImageResource(R.drawable.ic_media_pause)
+                }
+                is PlayerUiState.Paused, is PlayerUiState.Idle -> {
+                    binding.progressMinLoading.visibility = View.GONE
+                    binding.btnMinPlay.visibility = View.VISIBLE
+                    binding.btnMinPlay.setImageResource(R.drawable.ic_media_play)
+                }
+                is PlayerUiState.Error -> {
+                    binding.progressMinLoading.visibility = View.GONE
+                    binding.btnMinPlay.visibility = View.VISIBLE
+                    binding.btnMinPlay.setImageResource(R.drawable.ic_media_play)
+                }
             }
         }
     }

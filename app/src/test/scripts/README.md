@@ -43,4 +43,4 @@ python3 test_database.py details 547656128434943_122124313256749556
 Le token d'accès Facebook expire après un certain temps. Pour mettre à jour le token, modifiez la constante `ACCESS_TOKEN` dans les fichiers suivants :
 
 - `test_facebook_api_real.py`
-- `/workspace/project/Kitab al-Huda/app/src/main/java/com/alfred/kitabalhuda/network/FacebookGraphApiService.kt`
+- `app/src/main/java/com/alfred/kitabalhuda/network/FacebookApiService.kt`

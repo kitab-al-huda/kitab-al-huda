@@ -46,7 +46,7 @@ To bridge this digital divide and make sacred knowledge accessible to everyone, 
 ## 🛠️ Technology Stack
 
 * **Language**: [Kotlin](https://kotlinlang.org/) - 100% Type-safe & modern.
-* **UI & Architecture**: MVVM Architecture, Single Activity Pattern, Navigation Component, Data Binding, and Material 3 Design System.
+* **UI & Architecture**: MVVM Architecture, Single Activity Pattern, Navigation Component, View Binding, and Material 3 Design System.
 * **Local Database**: [Room Persistence Library](https://developer.android.com/training/data-storage/room) - Offline caching, playlists, surahs metadata, and listening history with complex relations.
 * **Audio Engine**: [Jetpack Media3 (ExoPlayer & MediaSession)](https://developer.android.com/guide/topics/media/media3) - Premium, high-performance audio engine.
 * **Network & API**: [Retrofit 2](https://square.github.io/retrofit/) & [Gson](https://github.com/google/gson) - Type-safe HTTP client to query Facebook Graph API.
@@ -68,7 +68,7 @@ To build and run the application, you must configure the Facebook Messenger API 
 1. **Clone the repository** and navigate to the project root:
    ```bash
    git clone <repository-url>
-   cd kitab-al-huda-network
+   cd kitab-al-huda
    ```
 
 2. **Create your `.env` file** from the template:
@@ -79,22 +79,22 @@ To build and run the application, you must configure the Facebook Messenger API 
 3. **Fill in your raw Facebook credentials** and choose your keys:
    * Open `.env` and fill in `FACEBOOK_BASE_URL`, `FACEBOOK_PAGE_ID`, and `FACEBOOK_ACCESS_TOKEN`.
    * Modify the `INTERNAL_BUILD_ID` in `.env` with your first secret key part.
-   * Open `app/src/main/res/values/strings.xml` and update `<string name="app_build_signature">` with your second secret key part. (Do the same for `values-en/strings.xml`).
+   * Open `app/src/main/res/values/strings.xml` and update `<string name="app_build_signature">` with your second secret key part.
 
 4. **Run the automated encryption script** (utilizes a local Python virtual environment):
    ```bash
    # Create a virtual environment (if not already done)
    python3 -m venv .venv
-   
+
    # Install dependencies (requires uv or pip)
-   uv pip install --python .venv pycryptodome
-   # OR: .venv/bin/pip install pycryptodome
-   
+   .venv/bin/pip install pycryptodome
+   # OR with uv: uv pip install pycryptodome
+
    # Run the script to automatically encrypt and update .env
    .venv/bin/python encrypt.py
    ```
 
-For an exhaustive walkthrough of this security system, please read the [Secrets Guide](file:///home/alfredo/Programmation/android_apps_projet/kitab-al-huda-network/SECRETS_GUIDE.md).
+For an exhaustive walkthrough of this security system, please read the [Secrets Guide](SECRETS_GUIDE.md).
 
 ---
 
@@ -123,17 +123,30 @@ Kitab al-Huda/
 ├── .env.example                 # Secrets template file
 ├── encrypt.py                   # Automated AES-256 local encryption script
 ├── SECRETS_GUIDE.md             # In-depth guide to configure application secrets
+├── build.gradle.kts             # Top-level build file
+├── settings.gradle.kts          # Gradle project settings
+├── gradlew                      # Gradle wrapper (Unix)
+├── gradle/
+│   └── libs.versions.toml       # Version catalog
 ├── app/
 │   ├── build.gradle.kts         # Application build and BuildConfig injections
 │   ├── proguard-rules.pro       # Strict Proguard/R8 obfuscation rules
 │   └── src/main/java/com/alfred/kitabalhuda/
-│       ├── database/            # Room Database, DAOs & Entities
-│       ├── di/                  # Dependency Injection (ViewModelFactory)
-│       ├── network/             # Retrofit API Services and response models
-│       ├── repository/          # Repository Pattern (Data sources abstraction)
-│       ├── service/             # Jetpack Media3 AudioPlayerService
-│       ├── ui/                  # ViewModels, Fragments and Adapters (by feature)
-│       └── utils/               # Cryptography and resource managers (CryptoUtils)
+│       ├── KitabAlHudaApplication.kt   # Application class
+│       ├── MainActivity.kt             # Main entry point (Navigation)
+│       ├── SplashActivity.kt           # Splash screen
+│       ├── database/                   # Room Database, DAOs & Entities
+│       │   ├── AppDatabase.kt
+│       │   ├── Converters.kt
+│       │   ├── dao/                    # Data Access Objects
+│       │   └── entity/                 # Room entity classes
+│       ├── di/                         # Dependency Injection (ViewModelFactory)
+│       ├── network/                    # Retrofit API Services & response models
+│       ├── repository/                 # Repository Pattern (data abstraction)
+│       ├── service/                    # Jetpack Media3 AudioPlayerService
+│       ├── ui/                         # Fragments, ViewModels & Adapters (by feature)
+│       ├── util/                       # Utility helpers (ReciterPreferences)
+│       └── utils/                      # Cryptography & resource managers (CryptoUtils)
 ```
 
 ---
@@ -142,4 +155,4 @@ Kitab al-Huda/
 
 This project is built with the sole intention of sharing beneficial Islamic knowledge and making Quran recitations accessible to everyone under strict economic and structural constraints.
 
-*“The best among you are those who learn the Qur'an and teach it.” (Sahih al-Bukhari)*
+*"The best among you are those who learn the Qur'an and teach it." (Sahih al-Bukhari)*

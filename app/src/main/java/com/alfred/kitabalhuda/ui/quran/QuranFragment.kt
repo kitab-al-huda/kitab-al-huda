@@ -58,7 +58,7 @@ class QuranFragment : Fragment() {
                 val app = requireActivity().application as KitabAlHudaApplication
                 val audioDao = app.database.audioDao()
                 lifecycleScope.launch {
-                    val selectedReciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
+                    val selectedReciterId = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterId(requireContext())
                     val audioExists = withContext(Dispatchers.IO) {
                         audioDao.getAudioForSurahAndReciter(selectedReciterId, sourate.numero) != null
                     }
@@ -88,7 +88,7 @@ class QuranFragment : Fragment() {
                 val audioDao = app.database.audioDao()
                 
                 lifecycleScope.launch {
-                    val selectedReciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
+                    val selectedReciterId = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterId(requireContext())
                     // Fetch ALL parts so multi-part surahs (e.g. Al-Baqara) play fully in playlists
                     val audioParts = withContext(Dispatchers.IO) {
                         audioDao.getAudioPartsForSurah(selectedReciterId, sourate.numero)
@@ -173,7 +173,7 @@ class QuranFragment : Fragment() {
 
     private fun setupReciterSelector() {
         // Show the current saved reciter name on the chip
-        val currentName = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterName(requireContext())
+        val currentName = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterName(requireContext())
         binding.chipReciter.text = currentName
 
         binding.chipReciter.setOnClickListener {
@@ -209,7 +209,7 @@ class QuranFragment : Fragment() {
         val app = requireActivity().application as KitabAlHudaApplication
         val audioDao = app.database.audioDao()
         lifecycleScope.launch {
-            val reciterId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(requireContext())
+            val reciterId = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterId(requireContext())
             availableSurahNumbers = withContext(Dispatchers.IO) {
                 audioDao.getAudiosByReciteurDirect(reciterId).map { it.sourateNumero }.toSet()
             }

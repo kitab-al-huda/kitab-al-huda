@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.alfred.kitabalhuda.R
-import com.alfred.kitabalhuda.util.ReciterPreferences
+import com.alfred.kitabalhuda.utils.ReciterPreferences
 import com.alfred.kitabalhuda.database.dao.ListeningHistoryDao.HistoryItem
 import com.alfred.kitabalhuda.databinding.FragmentDiscoverBinding
 import androidx.lifecycle.lifecycleScope

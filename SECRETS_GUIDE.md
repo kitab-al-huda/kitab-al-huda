@@ -92,23 +92,18 @@ INTERNAL_BUILD_ID=ChoisisUnMotDePasseLong1
 <string name="app_build_signature">ChoisisUnMotDePasseLong2</string>
 ```
 
-**Dans `app/src/main/res/values-en/strings.xml`** (même ligne) :
-
-```xml
-<string name="app_build_signature">ChoisisUnMotDePasseLong2</string>
-```
 
 > 💡 Exemples de bonnes clés : `K1tab@Huda#2026` et `S3cret$P4rt2!`
 > N'importe quoi de long, aléatoire et difficile à deviner.
 > 
-> ⚠️ Les deux fichiers `strings.xml` (default + en) doivent avoir **exactement la même valeur** pour `app_build_signature`.
+> ⚠️ Le fichier `strings.xml` doit contenir la valeur correcte pour `app_build_signature`.
 
 ---
 
 ### Étape 3 — Lancer `encrypt.py` pour chiffrer automatiquement
 
 ```bash
-cd /home/alfredo/Programmation/android_apps_projet/kitab-al-huda-network
+cd /home/alfredo/Programmation/android_apps_projet/kitab-al-huda
 
 # Lancer le script de chiffrement automatique dans le venv
 .venv/bin/python encrypt.py
@@ -176,7 +171,7 @@ Ou depuis Android Studio → **Run ▶**.
 | Utiliser `mykey1` / `mykey2` en production | Choisir de vraies clés longues et aléatoires |
 | Mettre les deux parties de la clé dans `.env` | Part 1 (`INTERNAL_BUILD_ID`) dans `.env`, Part 2 (`app_build_signature`) dans `strings.xml` |
 | Partager `.env` par email/Slack | Partager uniquement `.env.example` |
-| Oublier de mettre à jour `values-en/strings.xml` | Les deux `strings.xml` doivent avoir la **même** `app_build_signature` |
+| Modifier `app_build_signature` sans rechiffrer | Relancer `encrypt.py` après tout changement de clé |
 
 ---
 
@@ -210,7 +205,7 @@ Toujours utiliser l'environnement virtuel pour lancer `encrypt.py` :
 | `local.properties` | Chemin SDK Android | ❌ Non |
 | `app/build.gradle.kts` | Lit `.env` → injecte dans BuildConfig | ✅ Oui |
 | `res/values/strings.xml` | Clé part 2 (dans l'APK) | ✅ Oui |
-| `res/values-en/strings.xml` | Clé part 2 (version anglaise) | ✅ Oui |
+
 | `utils/CryptoUtils.kt` | Déchiffrement au runtime | ✅ Oui |
 | `repository/MessengerRepository.kt` | Utilise les valeurs déchiffrées | ✅ Oui |
 

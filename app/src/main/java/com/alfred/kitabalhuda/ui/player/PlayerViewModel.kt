@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.alfred.kitabalhuda.KitabAlHudaApplication
@@ -30,6 +31,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _playbackMode = MutableLiveData(PlaybackMode.SEQUENTIAL)
     val playbackMode: LiveData<PlaybackMode> = _playbackMode
 
+    private val _playerUiState = MutableLiveData<PlayerUiState>(PlayerUiState.Idle)
+    val playerUiState: LiveData<PlayerUiState> = _playerUiState
+
     private val audioRepository: AudioRepository
     private val historyDao: com.alfred.kitabalhuda.database.dao.ListeningHistoryDao
 
@@ -45,11 +49,55 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         controllerFuture = MediaController.Builder(application, sessionToken).buildAsync()
         controllerFuture.addListener({
             try {
-                _player.value = controllerFuture.get()
+                val controller = controllerFuture.get()
+                _player.value = controller
+                if (controller != null) {
+                    attachPlayerListener(controller)
+                }
             } catch (e: Exception) {
+                _playerUiState.value = PlayerUiState.Error(
+                    e.localizedMessage ?: "Failed to connect to player service"
+                )
                 e.printStackTrace()
             }
         }, MoreExecutors.directExecutor())
+    }
+
+    private fun attachPlayerListener(player: Player) {
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                updatePlayerUiState(player)
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updatePlayerUiState(player)
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                _playerUiState.value = PlayerUiState.Error(
+                    error.localizedMessage ?: "Playback error"
+                )
+            }
+
+            override fun onPlayerErrorChanged(error: PlaybackException?) {
+                if (error == null) updatePlayerUiState(player)
+            }
+        })
+        updatePlayerUiState(player)
+    }
+
+    private fun updatePlayerUiState(player: Player) {
+        _playerUiState.value = when (player.playbackState) {
+            Player.STATE_BUFFERING -> PlayerUiState.Loading
+            Player.STATE_READY -> {
+                val title = player.mediaMetadata.title?.toString() ?: ""
+                val artist = player.mediaMetadata.artist?.toString() ?: ""
+                if (player.isPlaying) PlayerUiState.Playing(title, artist)
+                else PlayerUiState.Paused(title, artist)
+            }
+            Player.STATE_IDLE, Player.STATE_ENDED -> PlayerUiState.Idle
+            else -> PlayerUiState.Idle
+        }
     }
 
     override fun onCleared() {
@@ -155,8 +203,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
         viewModelScope.launch {
             val context = getApplication<Application>()
-            val reciteurId = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterId(context)
-            val reciterName = com.alfred.kitabalhuda.util.ReciterPreferences.getSelectedReciterName(context)
+            val reciteurId = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterId(context)
+            val reciterName = com.alfred.kitabalhuda.utils.ReciterPreferences.getSelectedReciterName(context)
 
             val database = (context as KitabAlHudaApplication).database
             val audioDao = database.audioDao()

@@ -98,57 +98,77 @@
         app:layout_constraintEnd_toEndOf="@+id/seek_bar"
         app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
 
-    <ImageButton
-        android:id="@+id/btn_full_play"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="48dp"
-        android:background="@drawable/bg_circle_play_button"
-        android:backgroundTint="@color/huda_gold"
-        android:contentDescription="Play/Pause"
-        android:src="@drawable/ic_media_play"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/seek_bar"
-        app:tint="@color/black" />
+        <LinearLayout
+            android:id="@+id/layout_play_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seek_bar">
 
-    <ImageButton
-        android:id="@+id/btn_full_prev"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginEnd="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Previous"
-        android:src="@drawable/ic_media_prev"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_full_play"
-        app:layout_constraintEnd_toStartOf="@+id/btn_full_play"
-        app:layout_constraintTop_toTopOf="@+id/btn_full_play"
-        app:tint="@color/white" />
+            <ImageButton
+                android:id="@+id/btn_full_prev"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginEnd="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous"
+                android:src="@drawable/ic_media_prev"
+                app:tint="@color/white" />
 
-    <ImageButton
-        android:id="@+id/btn_full_next"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Next"
-        android:src="@drawable/ic_media_next"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_full_play"
-        app:layout_constraintStart_toEndOf="@+id/btn_full_play"
-        app:layout_constraintTop_toTopOf="@+id/btn_full_play"
-        app:tint="@color/white" />
-    
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_full_play">
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center">
+
+                <ImageButton
+                    android:id="@+id/btn_full_play"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:background="@drawable/bg_circle_play_button"
+                    android:backgroundTint="@color/huda_gold"
+                    android:contentDescription="Play/Pause"
+                    android:src="@drawable/ic_media_play"
+                    app:tint="@color/black" />
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/progress_full_loading"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:indicatorColor="@color/huda_gold"
+                    app:indicatorSize="40dp"
+                    app:trackThickness="4dp" />
+            </FrameLayout>
+
+            <ImageButton
+                android:id="@+id/btn_full_next"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next"
+                android:src="@drawable/ic_media_next"
+                app:tint="@color/white" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layout_play_controls">
 
         <ImageButton
             android:id="@+id/btn_change_reciter"

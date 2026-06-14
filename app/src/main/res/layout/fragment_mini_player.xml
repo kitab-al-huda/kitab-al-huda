@@ -47,6 +47,20 @@
             app:layout_constraintTop_toBottomOf="@+id/text_min_title"
             tools:text="@string/ready_to_play" />
 
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress_min_loading"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:indicatorColor="@color/huda_gold"
+            app:indicatorSize="28dp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_min_play"
+            app:layout_constraintEnd_toEndOf="@+id/btn_min_play"
+            app:layout_constraintStart_toStartOf="@+id/btn_min_play"
+            app:layout_constraintTop_toTopOf="@+id/btn_min_play"
+            app:trackThickness="3dp" />
+
         <ImageButton
             android:id="@+id/btn_min_play"
             android:layout_width="48dp"

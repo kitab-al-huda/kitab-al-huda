@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
@@ -73,6 +74,16 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
                 sheet.layoutParams = layoutParams
             }
         }
+        viewModel.player.value?.let { player ->
+            if (player.isPlaying) {
+                handler.post(updateProgressAction)
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        handler.removeCallbacks(updateProgressAction)
     }
 
     override fun onDestroyView() {
@@ -248,6 +259,31 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
                 if (player.isPlaying) handler.post(updateProgressAction)
             } else {
                 playerListener = null
+            }
+        }
+
+        viewModel.playerUiState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is PlayerUiState.Loading -> {
+                    _binding?.progressFullLoading?.visibility = View.VISIBLE
+                        _binding?.btnFullPlay?.visibility = View.INVISIBLE
+                }
+                is PlayerUiState.Playing -> {
+                    _binding?.progressFullLoading?.visibility = View.GONE
+                    _binding?.btnFullPlay?.visibility = View.VISIBLE
+                    updatePlayPauseButton(true)
+                }
+                is PlayerUiState.Paused, is PlayerUiState.Idle -> {
+                    _binding?.progressFullLoading?.visibility = View.GONE
+                    _binding?.btnFullPlay?.visibility = View.VISIBLE
+                    updatePlayPauseButton(false)
+                }
+                is PlayerUiState.Error -> {
+                    _binding?.progressFullLoading?.visibility = View.GONE
+                    _binding?.btnFullPlay?.visibility = View.VISIBLE
+                    updatePlayPauseButton(false)
+                    Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -469,7 +505,7 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
             viewModel.player.value?.let { player ->
                 val currentTitle = player.mediaMetadata.title?.toString()
                 if (currentTitle != null) {
-                    com.alfred.kitabalhuda.util.ReciterPreferences.setSelectedReciter(
+                    com.alfred.kitabalhuda.utils.ReciterPreferences.setSelectedReciter(
                         requireContext(), reciterId, reciterName
                     )
                     val surahNo = getCurrentExtras(player)?.getInt("sourateNumero", 1) ?: 1

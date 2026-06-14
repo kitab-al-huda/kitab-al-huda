@@ -13,7 +13,7 @@ import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.database.entity.ReciteurEntity
 import com.alfred.kitabalhuda.databinding.ItemReciterSelectionBinding
 import com.alfred.kitabalhuda.repository.ReciteurRepository
-import com.alfred.kitabalhuda.util.ReciterPreferences
+import com.alfred.kitabalhuda.utils.ReciterPreferences
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
