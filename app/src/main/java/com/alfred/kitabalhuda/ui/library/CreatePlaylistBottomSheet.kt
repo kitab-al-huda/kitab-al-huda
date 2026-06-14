@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.BottomSheetCreatePlaylistBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -41,13 +42,13 @@ class CreatePlaylistBottomSheet : BottomSheetDialogFragment() {
                 val ids = audioIdsToAddToNew
                 if (ids != null && ids.isNotEmpty()) {
                     viewModel.createPlaylistWithTracks(name, ids)
-                    Toast.makeText(context, "Playlist created with selected tracks", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.playlist_created), Toast.LENGTH_SHORT).show()
                 } else {
                     viewModel.createPlaylist(name)
                 }
                 dismiss()
             } else {
-                Toast.makeText(context, "Please enter a name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.enter_name_please), Toast.LENGTH_SHORT).show()
             }
         }
     }

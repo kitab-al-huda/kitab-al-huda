@@ -15,6 +15,7 @@ import com.alfred.kitabalhuda.KitabAlHudaApplication
 import com.alfred.kitabalhuda.database.entity.AudioEntity
 import com.alfred.kitabalhuda.repository.AudioRepository
 import com.alfred.kitabalhuda.service.AudioPlayerService
+import com.alfred.kitabalhuda.utils.toArabicIndic
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
@@ -330,7 +331,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun buildTrackTitle(surahName: String?, partNumber: Int, totalParts: Int): String {
         val name = surahName ?: "سورة"
-        return if (totalParts > 1) "$name — الجزء $partNumber/$totalParts" else name
+        return if (totalParts > 1) "$name — الجزء ${partNumber.toArabicIndic()}/${totalParts.toArabicIndic()}" else name
     }
 
     private fun buildCumulativeMaps(
@@ -518,7 +519,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 val totalParts = partCountsByKey[key] ?: 1
                 buildMediaItem(
                     audio = track.audio,
-                    title = buildTrackTitle(track.sourate.nomPhonetique, track.audio.partNumber, totalParts),
+                    title = buildTrackTitle(track.sourate.nomArabe, track.audio.partNumber, totalParts),
                     artist = track.reciteur.nom,
                     totalParts = totalParts,
                     cumulativeStartMs = cumulativeStartMap[track.audio.id] ?: 0L,

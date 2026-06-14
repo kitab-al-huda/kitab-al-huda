@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.database.entity.SourateEntity
 import com.alfred.kitabalhuda.databinding.ItemSourateBinding
+import com.alfred.kitabalhuda.utils.toArabicIndic
 
 class SourateAdapter(
     private val onClick: (SourateEntity) -> Unit,
@@ -51,9 +52,9 @@ class SourateAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(sourate: SourateEntity) {
-            binding.textNumero.text = sourate.numero.toString()
+            binding.textNumero.text = sourate.numero.toArabicIndic()
             binding.textNomArabe.text = sourate.nomArabe
-            binding.textNomPhonetique.text = sourate.nomPhonetique
+            binding.textNomPhonetique.visibility = android.view.View.GONE
 
             val context = binding.root.context
             val placeResId = if (sourate.lieuRevelation.equals("Mecca", ignoreCase = true) ||
@@ -78,7 +79,7 @@ class SourateAdapter(
             } else {
                 // Render normally
                 binding.root.alpha = 1.0f
-                binding.textInfo.text = "$place • ${sourate.nombreVersets} $ayahs"
+                binding.textInfo.text = "$place • ${sourate.nombreVersets.toArabicIndic()} $ayahs"
 
                 // Show radial bars animation if currently playing
                 if (sourate.numero == currentlyPlayingSurahNumber) {

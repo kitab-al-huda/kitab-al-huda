@@ -3,8 +3,11 @@ package com.alfred.kitabalhuda.ui.library
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.database.dao.PlaylistDao
 import com.alfred.kitabalhuda.databinding.ItemPlaylistTrackBinding
+import com.alfred.kitabalhuda.utils.formatDurationArabic
+import com.alfred.kitabalhuda.utils.toArabicIndic
 import java.util.Collections
 
 class PlaylistDetailAdapter(
@@ -70,21 +73,21 @@ class PlaylistDetailAdapter(
             val isPlaying = track.audio.urlWeb == currentlyPlayingUrl
             val context = binding.root.context
 
-            // Position count
-            binding.textTrackNumber.text = (position + 1).toString()
+            // Position count (Arabic-Indic)
+            binding.textTrackNumber.text = (position + 1).toArabicIndic()
 
-            // Set Titles (Phonetic & Arabic)
-            binding.textTrackTitle.text = track.sourate.nomPhonetique
-            binding.textTrackArabic.text = track.sourate.nomArabe
+            // Set Titles (Arabic)
+            binding.textTrackTitle.text = track.sourate.nomArabe
 
-            // Format Metadata: Reciter • x versets • Lieu
-            val versesText = if (track.sourate.nombreVersets == 1) "1 verset" else "${track.sourate.nombreVersets} versets"
+            // Format Metadata: Reciter • x Ayahs • Location
+            val versesText = context.getString(R.string.ayahs_count)
+            val versesCount = track.sourate.nombreVersets.toArabicIndic()
             val lieuText = when (track.sourate.lieuRevelation.lowercase()) {
-                "makkah", "mecquoise" -> "Mecquoise"
-                "madinah", "médinoise" -> "Médinoise"
+                "makkah", "mecquoise", "mecca", "meccan" -> context.getString(R.string.filter_mecca)
+                "madinah", "médinoise", "medina", "medinan" -> context.getString(R.string.filter_medina)
                 else -> track.sourate.lieuRevelation
             }
-            binding.textTrackArtist.text = "${track.reciteur.nom} • $versesText • $lieuText"
+            binding.textTrackArtist.text = "${track.reciteur.nom} • $versesCount $versesText • $lieuText"
 
             // Format and display Duration
             binding.textTrackDuration.text = formatDuration(track.audio.duree)
@@ -131,15 +134,12 @@ class PlaylistDetailAdapter(
         }
 
         /**
-         * Converts duration in milliseconds or seconds to MM:SS string.
+         * Converts duration in milliseconds or seconds to MM:SS with Arabic-Indic digits.
          */
         private fun formatDuration(duration: Long): String {
             if (duration <= 0) return ""
-            // Detect if duration is stored in seconds instead of milliseconds
             val totalSeconds = if (duration > 100000) duration / 1000 else duration
-            val minutes = totalSeconds / 60
-            val seconds = totalSeconds % 60
-            return String.format(java.util.Locale.getDefault(), "%02d:%02d", minutes, seconds)
+            return totalSeconds.formatDurationArabic()
         }
     }
 }

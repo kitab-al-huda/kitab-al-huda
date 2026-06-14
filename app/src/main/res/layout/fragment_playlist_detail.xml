@@ -89,7 +89,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="MA PLAYLIST"
+                        android:text="@string/playlist_tag"
                         android:textColor="@color/huda_teal"
                         android:textSize="10sp"
                         android:textStyle="bold"
@@ -103,7 +103,7 @@
                         android:layout_marginTop="6dp"
                         android:ellipsize="end"
                         android:maxLines="2"
-                        tools:text="Favoris de Recitation"
+                        tools:text="قائمة تشغيل"
                         android:textColor="@color/white"
                         android:textSize="22sp"
                         android:textStyle="bold" />
@@ -113,7 +113,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Kitab Al-Huda • Premium"
+                        android:text="@string/app_name"
                         android:textColor="@color/gray_500"
                         android:textSize="12sp" />
 
@@ -123,7 +123,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        tools:text="0 sourate"
+                        tools:text="0 مقاطع"
                         android:textColor="@color/huda_teal_light"
                         android:textSize="12sp"
                         android:textStyle="bold" />

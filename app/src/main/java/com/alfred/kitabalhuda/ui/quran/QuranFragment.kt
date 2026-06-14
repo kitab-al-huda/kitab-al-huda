@@ -96,7 +96,7 @@ class QuranFragment : Fragment() {
                             .newInstance(audioParts.map { it.id })
                         sheet.show(parentFragmentManager, com.alfred.kitabalhuda.ui.library.AddToPlaylistBottomSheet.TAG)
                     } else {
-                        Toast.makeText(context, "Audio not found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, getString(R.string.audio_not_found), Toast.LENGTH_SHORT).show()
                     }
                 }
             },

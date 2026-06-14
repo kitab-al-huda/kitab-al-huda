@@ -165,7 +165,7 @@ class AudioPlayerService : MediaLibraryService() {
                         .setIsPlayable(false)
                         .setIsBrowsable(true)
                         .setFolderType(androidx.media3.common.MediaMetadata.FOLDER_TYPE_MIXED)
-                        .setTitle("KitabAlHudaRoot")
+                        .setTitle(applicationContext.getString(com.alfred.kitabalhuda.R.string.app_name))
                         .build()
                 )
                 .build()

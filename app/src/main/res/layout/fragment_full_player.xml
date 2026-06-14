@@ -15,7 +15,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Collapse"
+        android:contentDescription="@string/collapse"
         android:src="@drawable/ic_close"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -42,7 +42,7 @@
         android:layout_marginTop="80dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
-        android:text="Surah Title"
+        tools:text="اسم السورة"
         android:textColor="@color/white"
         android:textSize="32sp"
         android:textStyle="bold"
@@ -56,7 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="Reciter Name"
+        tools:text="اسم القارئ"
         android:textColor="@color/text_secondary"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/text_full_title"
@@ -115,7 +115,7 @@
                 android:layout_height="64dp"
                 android:layout_marginEnd="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Previous"
+                android:contentDescription="@string/previous"
                 android:src="@drawable/ic_media_prev"
                 app:tint="@color/white" />
 
@@ -130,7 +130,7 @@
                     android:layout_height="80dp"
                     android:background="@drawable/bg_circle_play_button"
                     android:backgroundTint="@color/huda_gold"
-                    android:contentDescription="Play/Pause"
+                    android:contentDescription="@string/play_pause"
                     android:src="@drawable/ic_media_play"
                     app:tint="@color/black" />
 
@@ -152,7 +152,7 @@
                 android:layout_height="64dp"
                 android:layout_marginStart="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next"
+                android:contentDescription="@string/next"
                 android:src="@drawable/ic_media_next"
                 app:tint="@color/white" />
 

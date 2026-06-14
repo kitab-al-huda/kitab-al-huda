@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentPlaylistDetailBinding
 import com.google.android.material.appbar.AppBarLayout
 
@@ -87,7 +88,7 @@ class PlaylistDetailFragment : Fragment() {
             if (tracks.isNotEmpty()) {
                 val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
                 playerViewModel.playPlaylist(tracks, 0)
-                Toast.makeText(context, "Playing: $playlistName", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.playing_playlist, playlistName), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -102,7 +103,7 @@ class PlaylistDetailFragment : Fragment() {
                 val startIndex = allTracks.indexOf(track)
                 if (startIndex >= 0) {
                     playerViewModel.playPlaylist(allTracks, startIndex)
-                    Toast.makeText(context, "Playing from ${track.sourate.nomPhonetique}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.playing_from, track.sourate.nomArabe), Toast.LENGTH_SHORT).show()
                 }
             },
             onDeleteClick = { track ->
@@ -127,8 +128,7 @@ class PlaylistDetailFragment : Fragment() {
                 binding.textEmptyTracks.visibility = if (tracks.isEmpty()) View.VISIBLE else View.GONE
 
                 // Set total counts in our header dynamically
-                val countText = if (tracks.size == 1) "1 sourate" else "${tracks.size} sourates"
-                binding.textHeaderTracksCount.text = countText
+                binding.textHeaderTracksCount.text = resources.getString(R.string.tracks_count, tracks.size)
             }
         }
 

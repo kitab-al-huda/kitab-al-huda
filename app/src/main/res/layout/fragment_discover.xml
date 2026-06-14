@@ -125,7 +125,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Sahih Muslim"
+                        android:text="@string/hadith_source_muslim"
                         android:textColor="@color/gray_500"
                         android:textSize="12sp"
                         android:textStyle="italic" />

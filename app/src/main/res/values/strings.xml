@@ -1,11 +1,8 @@
 <resources>
     <string name="app_name">كتاب الهدى</string>
     <string name="title_home">استكشف</string>
-    <string name="title_search">بحث</string>
     <string name="title_quran">القرآن الكريم</string>
-    <string name="title_reciters">القراء</string>
     <string name="title_library">مكتبتي</string>
-    <string name="title_profile">الملف الشخصي</string>
 
     <string name="welcome_back">مرحباً بعودتك</string>
     <string name="discover_beauty">اكتشف جمال القرآن</string>
@@ -22,34 +19,17 @@
     <string name="ready_to_play">جاهز للتشغيل</string>
     <string name="next">التالي</string>
     <string name="previous">السابق</string>
-    <string name="play">تشغيل</string>
-    <string name="pause">إيقاف</string>
-    <string name="mini_player_title">المشغل المصغر</string>
-    <string name="full_player_title">المشغل الكامل</string>
-    <string name="shuffle">خلط</string>
-    <string name="repeat">تكرار</string>
-    <string name="close">إغلاق</string>
     <string name="options">خيارات</string>
     
     <!-- General -->
     <string name="settings">الإعدادات</string>
-    <string name="share">مشاركة</string>
-    <string name="about">حول التطبيق</string>
 
     <!-- Settings Strings -->
     <string name="settings_title">الإعدادات</string>
     
     <!-- Common Actions (Useful generally) -->
     <string name="cancel">إلغاء</string>
-    <string name="ok_button">موافق</string>
-    <string name="delete_button">حذف</string>
-    <string name="apply">تطبيق</string>
-    <string name="reset">إعادة تعيين</string>
     <string name="search_hint">بحث...</string>
-    
-    <!-- Error Messages (Useful generally) -->
-    <string name="error_message_format">خطأ: %1$s</string>
-    <string name="an_error_occurred_format">حدث خطأ: %1$s</string>
     
     <string name="filters">تصفية</string>
     <string name="sort">ترتيب</string>
@@ -91,7 +71,6 @@
 
     <!-- Reciter Selection -->
     <string name="choose_reciter">اختر القارئ</string>
-    <string name="current_reciter">القارئ: %1$s</string>
 
     <!-- Playback Modes -->
     <string name="playback_mode_title">وضع التشغيل</string>
@@ -99,6 +78,33 @@
     <string name="mode_repeat_all">تكرار الكل</string>
     <string name="mode_repeat_one">تكرار السورة</string>
     <string name="mode_play_once_stop">تشغيل السورة الحالية والتوقف</string>
+
+    <!-- Internal App Configurations -->
+    <!-- Arabic UI: No Latin text -->
+    <string name="audio_not_found">لم يتم العثور على الصوت</string>
+    <string name="playlist_created">تم إنشاء قائمة التشغيل</string>
+    <string name="enter_name_please">الرجاء إدخال اسم</string>
+    <string name="playing_playlist">جاري تشغيل: %s</string>
+    <string name="playing_surah">جاري تشغيل %s</string>
+    <string name="playing_from">جاري التشغيل من %s</string>
+
+    <!-- Sleep Timer Options -->
+    <string name="minutes_15">١٥ دقيقة</string>
+    <string name="minutes_30">٣٠ دقيقة</string>
+    <string name="minutes_45">٤٥ دقيقة</string>
+    <string name="minutes_60">٦٠ دقيقة</string>
+    <string name="turn_off_timer">إيقاف المؤقت</string>
+
+    <!-- Accessibility -->
+    <string name="collapse">طي</string>
+    <string name="reciter_image_description">صورة القارئ</string>
+
+    <!-- Hadith Source -->
+    <string name="hadith_source_muslim">صحيح مسلم</string>
+
+    <!-- Playlist -->
+    <string name="playlist_tag">قائمة التشغيل</string>
+    <string name="play_pause">تشغيل / إيقاف</string>
 
     <!-- Internal App Configurations -->
     <string name="app_build_signature">K1tab@Huda#2026</string>

@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentHistoryBinding
 
 class HistoryFragment : Fragment() {
@@ -46,7 +47,7 @@ class HistoryFragment : Fragment() {
                 historyItem.reciteur.id,
                 historyItem.reciteur.nom
             )
-            Toast.makeText(context, "Playing ${historyItem.sourate.nomPhonetique}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.playing_surah, historyItem.sourate.nomArabe), Toast.LENGTH_SHORT).show()
         }
         
         binding.recyclerHistory.layoutManager = LinearLayoutManager(context)

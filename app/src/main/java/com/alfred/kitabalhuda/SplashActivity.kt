@@ -24,7 +24,7 @@ class SplashActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // Removed legacy sync call
             // app.repository.synchronizeData()
-            textStatus.text = "Welcome to Kitab Al-Huda"
+            textStatus.text = getString(R.string.loading)
             kotlinx.coroutines.delay(1000) // Small delay for logo visibility
             
             progressBar.visibility = ProgressBar.GONE

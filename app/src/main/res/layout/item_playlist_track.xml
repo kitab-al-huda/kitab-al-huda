@@ -76,7 +76,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            tools:text="Al-Fatihah"
+            tools:text="الفاتحة"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -89,7 +89,7 @@
             android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            tools:text="Mishary Al-Afasy • 7 versets"
+            tools:text="مشاري العفاسي • ٧ آيات"
             android:textColor="@color/gray_500"
             android:textSize="12sp" />
 
@@ -107,11 +107,12 @@
         app:layout_constraintEnd_toStartOf="@+id/btn_item_options"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Arabic Calligraphy Name -->
+        <!-- Arabic Calligraphy Name (hidden: title already shows Arabic) -->
         <TextView
             android:id="@+id/text_track_arabic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             tools:text="الفاتحة"
             android:textColor="@color/white"
             android:textSize="17sp"
