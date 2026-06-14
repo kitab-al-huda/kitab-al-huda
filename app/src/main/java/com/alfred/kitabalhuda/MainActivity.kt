@@ -31,12 +31,12 @@ class MainActivity : AppCompatActivity() {
         // Initialize ViewModel to bind service
         val viewModel = androidx.lifecycle.ViewModelProvider(this)[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
         
-        viewModel.player.observe(this) { player ->
-            // Show mini player if player is connected (or valid state)
-            // For now, simpler check: if we have a controller, show it (or use a dedicated liveData for visibility)
-             if (player != null) {
-                 binding.miniPlayerContainer.visibility = android.view.View.VISIBLE
-             }
+        viewModel.playerUiState.observe(this) { state ->
+            binding.miniPlayerContainer.visibility = if (state !is com.alfred.kitabalhuda.ui.player.PlayerUiState.Idle) {
+                android.view.View.VISIBLE
+            } else {
+                android.view.View.GONE
+            }
         }
         
         // Setup Toolbar

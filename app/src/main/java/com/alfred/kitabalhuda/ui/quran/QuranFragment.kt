@@ -29,8 +29,6 @@ class QuranFragment : Fragment() {
     private lateinit var adapter: SourateAdapter
     private lateinit var playerViewModel: com.alfred.kitabalhuda.ui.player.PlayerViewModel
 
-    private var playerListener: androidx.media3.common.Player.Listener? = null
-    private var currentPlayer: androidx.media3.common.Player? = null
     private var availableSurahNumbers: Set<Int> = emptySet()
 
     override fun onCreateView(
@@ -126,31 +124,18 @@ class QuranFragment : Fragment() {
         }
         updateAvailableSurahs()
 
-        // Observe player to show "currently playing" indicator
-        playerViewModel.player.observe(viewLifecycleOwner) { player ->
-            currentPlayer?.let { oldPlayer ->
-                playerListener?.let { listener ->
-                    oldPlayer.removeListener(listener)
+        // Observe player state to show "currently playing" indicator
+        playerViewModel.playerUiState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is com.alfred.kitabalhuda.ui.player.PlayerUiState.Playing -> {
+                    adapter.setCurrentlyPlaying(state.surahNumber)
                 }
-            }
-
-            currentPlayer = player
-
-            if (player != null) {
-                val listener = object : androidx.media3.common.Player.Listener {
-                    override fun onMediaItemTransition(
-                        mediaItem: androidx.media3.common.MediaItem?,
-                        reason: Int
-                    ) {
-                        updateCurrentlyPlaying(mediaItem)
-                    }
+                is com.alfred.kitabalhuda.ui.player.PlayerUiState.Paused -> {
+                    adapter.setCurrentlyPlaying(state.surahNumber)
                 }
-                playerListener = listener
-                player.addListener(listener)
-                updateCurrentlyPlaying(player.currentMediaItem)
-            } else {
-                playerListener = null
-                updateCurrentlyPlaying(null)
+                else -> {
+                    adapter.setCurrentlyPlaying(-1)
+                }
             }
         }
     }
@@ -193,17 +178,7 @@ class QuranFragment : Fragment() {
         }
     }
 
-    private fun updateCurrentlyPlaying(mediaItem: androidx.media3.common.MediaItem?) {
-        val title = mediaItem?.mediaMetadata?.title?.toString() ?: ""
-        val surahName = title.substringBefore(" — ")
-        // This is a bit hacky, normally we'd have a surah ID in metadata
-        // For now, search matches by name
-        viewModel.sourates.value?.find { it.nomArabe == surahName }?.let { sourate ->
-            adapter.setCurrentlyPlaying(sourate.numero)
-        } ?: run {
-            adapter.setCurrentlyPlaying(-1)
-        }
-    }
+
 
     private fun updateAvailableSurahs() {
         val app = requireActivity().application as KitabAlHudaApplication
@@ -248,13 +223,6 @@ class QuranFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        currentPlayer?.let { player ->
-            playerListener?.let { listener ->
-                player.removeListener(listener)
-            }
-        }
-        playerListener = null
-        currentPlayer = null
         super.onDestroyView()
         _binding = null
     }

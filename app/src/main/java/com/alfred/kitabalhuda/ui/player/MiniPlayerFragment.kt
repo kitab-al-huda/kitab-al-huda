@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentMiniPlayerBinding
 
@@ -13,9 +14,8 @@ class MiniPlayerFragment : Fragment() {
     private var _binding: FragmentMiniPlayerBinding? = null
     private val binding get() = _binding!!
 
-    private var playerListener: androidx.media3.common.Player.Listener? = null
-    private var currentPlayer: androidx.media3.common.Player? = null
     private var lastClickTime = 0L
+    private lateinit var viewModel: PlayerViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,63 +26,12 @@ class MiniPlayerFragment : Fragment() {
         return binding.root
     }
 
-    private lateinit var viewModel: PlayerViewModel
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = androidx.lifecycle.ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
 
-        viewModel.player.observe(viewLifecycleOwner) { player ->
-            currentPlayer?.let { oldPlayer ->
-                playerListener?.let { listener ->
-                    oldPlayer.removeListener(listener)
-                }
-            }
-
-            currentPlayer = player
-
-            if (player != null) {
-                updateMiniPlayerMetadata(player)
-
-                binding.btnMinPlay.setOnClickListener {
-                    if (player.isPlaying) player.pause() else player.play()
-                }
-
-                val listener = object : androidx.media3.common.Player.Listener {
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        binding.btnMinPlay.setImageResource(
-                            if (isPlaying) R.drawable.ic_media_pause else R.drawable.ic_media_play
-                        )
-                    }
-
-                    override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
-                        updateMiniPlayerMetadata(player)
-                    }
-
-                    override fun onEvents(player: androidx.media3.common.Player, events: androidx.media3.common.Player.Events) {
-                         if (events.contains(androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED)) {
-                             updateMiniPlayerMetadata(player)
-                         }
-                    }
-                }
-                playerListener = listener
-                player.addListener(listener)
-
-                binding.root.setOnClickListener {
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastClickTime < 1000) return@setOnClickListener
-                    lastClickTime = currentTime
-
-                    // Prevent opening multiple instances of FullPlayerFragment if double-clicked
-                    val existing = parentFragmentManager.findFragmentByTag("FullPlayer")
-                    if (existing != null && existing.isAdded) return@setOnClickListener
-
-                    val fullPlayer = FullPlayerFragment()
-                    fullPlayer.show(parentFragmentManager, "FullPlayer")
-                }
-            } else {
-                playerListener = null
-            }
+        binding.btnMinPlay.setOnClickListener {
+            viewModel.togglePlayPause()
         }
 
         viewModel.playerUiState.observe(viewLifecycleOwner) { state ->
@@ -95,11 +44,22 @@ class MiniPlayerFragment : Fragment() {
                     binding.progressMinLoading.visibility = View.GONE
                     binding.btnMinPlay.visibility = View.VISIBLE
                     binding.btnMinPlay.setImageResource(R.drawable.ic_media_pause)
+                    binding.textMinTitle.text = state.fullTitle
+                    binding.textMinSubtitle.text = state.artist
                 }
-                is PlayerUiState.Paused, is PlayerUiState.Idle -> {
+                is PlayerUiState.Paused -> {
                     binding.progressMinLoading.visibility = View.GONE
                     binding.btnMinPlay.visibility = View.VISIBLE
                     binding.btnMinPlay.setImageResource(R.drawable.ic_media_play)
+                    binding.textMinTitle.text = state.fullTitle
+                    binding.textMinSubtitle.text = state.artist
+                }
+                is PlayerUiState.Idle -> {
+                    binding.progressMinLoading.visibility = View.GONE
+                    binding.btnMinPlay.visibility = View.VISIBLE
+                    binding.btnMinPlay.setImageResource(R.drawable.ic_media_play)
+                    binding.textMinTitle.text = getString(R.string.ready_to_play)
+                    binding.textMinSubtitle.text = ""
                 }
                 is PlayerUiState.Error -> {
                     binding.progressMinLoading.visibility = View.GONE
@@ -108,26 +68,21 @@ class MiniPlayerFragment : Fragment() {
                 }
             }
         }
-    }
 
+        binding.root.setOnClickListener {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastClickTime < 1000) return@setOnClickListener
+            lastClickTime = currentTime
 
-    private fun updateMiniPlayerMetadata(player: androidx.media3.common.Player) {
-        val metadata = player.mediaMetadata
-        val title = metadata.title ?: "Ready to Play"
-        binding.textMinTitle.text = title
-        
-        // Update subtitle with reciter's name (artist)
-        binding.textMinSubtitle.text = metadata.artist ?: ""
+            val existing = parentFragmentManager.findFragmentByTag("FullPlayer")
+            if (existing != null && existing.isAdded) return@setOnClickListener
+
+            val fullPlayer = FullPlayerFragment()
+            fullPlayer.show(parentFragmentManager, "FullPlayer")
+        }
     }
 
     override fun onDestroyView() {
-        currentPlayer?.let { player ->
-            playerListener?.let { listener ->
-                player.removeListener(listener)
-            }
-        }
-        playerListener = null
-        currentPlayer = null
         super.onDestroyView()
         _binding = null
     }

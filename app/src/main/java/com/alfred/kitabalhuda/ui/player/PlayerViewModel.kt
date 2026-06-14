@@ -18,6 +18,9 @@ import com.alfred.kitabalhuda.service.AudioPlayerService
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -25,17 +28,22 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private var controllerFuture: ListenableFuture<MediaController>
     private val _player = MutableLiveData<Player?>()
-    val player: LiveData<Player?> = _player
 
-    // Custom playback mode (extends beyond Media3's 3 built-in repeat modes)
     private val _playbackMode = MutableLiveData(PlaybackMode.SEQUENTIAL)
     val playbackMode: LiveData<PlaybackMode> = _playbackMode
 
     private val _playerUiState = MutableLiveData<PlayerUiState>(PlayerUiState.Idle)
     val playerUiState: LiveData<PlayerUiState> = _playerUiState
 
+    private val _playerProgress = MutableLiveData(PlayerProgress(0L, 0L))
+    val playerProgress: LiveData<PlayerProgress> = _playerProgress
+
     private val audioRepository: AudioRepository
     private val historyDao: com.alfred.kitabalhuda.database.dao.ListeningHistoryDao
+
+    private var positionUpdateJob: Job? = null
+
+    private var lastSurateNo: Int = -1
 
     init {
         val database = (application as KitabAlHudaApplication).database
@@ -63,14 +71,35 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }, MoreExecutors.directExecutor())
     }
 
+    // ── Player listener ──────────────────────────────────────────────────
+
     private fun attachPlayerListener(player: Player) {
         player.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 updatePlayerUiState(player)
+                updatePlayerProgress(player)
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 updatePlayerUiState(player)
+                if (isPlaying) startPositionUpdates(player)
+                else stopPositionUpdates()
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                val newSurateNo = mediaItem?.mediaMetadata?.extras
+                    ?.getInt("sourateNumero", -1) ?: -1
+                val isSameSurah = newSurateNo != -1 && newSurateNo == lastSurateNo
+                lastSurateNo = newSurateNo
+
+                if (!isSameSurah && reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO
+                    && _playbackMode.value == PlaybackMode.PLAY_CURRENT_AND_STOP
+                ) {
+                    player.pause()
+                }
+
+                updatePlayerUiState(player)
+                updatePlayerProgress(player)
             }
 
             override fun onPlayerError(error: PlaybackException) {
@@ -79,37 +108,207 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
 
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                updatePlayerUiState(player)
+            }
+
             override fun onPlayerErrorChanged(error: PlaybackException?) {
-                if (error == null) updatePlayerUiState(player)
+                if (error == null) {
+                    updatePlayerUiState(player)
+                    updatePlayerProgress(player)
+                }
             }
         })
+        lastSurateNo = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
         updatePlayerUiState(player)
+        updatePlayerProgress(player)
+        if (player.isPlaying) startPositionUpdates(player)
     }
+
+    // ── State updates ────────────────────────────────────────────────────
 
     private fun updatePlayerUiState(player: Player) {
         _playerUiState.value = when (player.playbackState) {
             Player.STATE_BUFFERING -> PlayerUiState.Loading
             Player.STATE_READY -> {
-                val title = player.mediaMetadata.title?.toString() ?: ""
+                val fullTitle = player.mediaMetadata.title?.toString() ?: ""
                 val artist = player.mediaMetadata.artist?.toString() ?: ""
-                if (player.isPlaying) PlayerUiState.Playing(title, artist)
-                else PlayerUiState.Paused(title, artist)
+                val extras = player.currentMediaItem?.mediaMetadata?.extras
+                val totalParts = extras?.getInt("totalParts", 1) ?: 1
+                val title = if (totalParts > 1) fullTitle.substringBefore(" — ") else fullTitle
+                val shuffle = player.shuffleModeEnabled
+                val mediaId = player.currentMediaItem?.mediaId
+                val surahNumber = extras?.getInt("sourateNumero", -1) ?: -1
+                if (player.isPlaying) PlayerUiState.Playing(title, fullTitle, artist, shuffle, mediaId, surahNumber)
+                else PlayerUiState.Paused(title, fullTitle, artist, shuffle, mediaId, surahNumber)
             }
             Player.STATE_IDLE, Player.STATE_ENDED -> PlayerUiState.Idle
             else -> PlayerUiState.Idle
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        MediaController.releaseFuture(controllerFuture)
+    private fun updatePlayerProgress(player: Player) {
+        if (player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_BUFFERING) {
+            _playerProgress.value = PlayerProgress(
+                currentPositionMs = getDisplayPosition(player),
+                totalDurationMs = getSurahTotalMs(player)
+            )
+        }
     }
 
-    /**
-     * Sets the custom playback mode and maps it to the underlying Media3 repeat mode.
-     * For PLAY_CURRENT_AND_STOP, we use REPEAT_MODE_OFF at the player level,
-     * and the fragment handles pausing when a media item transition occurs.
-     */
+    private fun startPositionUpdates(player: Player) {
+        positionUpdateJob?.cancel()
+        positionUpdateJob = viewModelScope.launch {
+            while (isActive) {
+                _playerProgress.postValue(PlayerProgress(
+                    currentPositionMs = getDisplayPosition(player),
+                    totalDurationMs = getSurahTotalMs(player)
+                ))
+                delay(500)
+            }
+        }
+    }
+
+    private fun stopPositionUpdates() {
+        positionUpdateJob?.cancel()
+        positionUpdateJob = null
+    }
+
+    // ── Combined progress helpers (from FullPlayerFragment) ────────────────
+
+    private fun getCurrentExtras(player: Player): android.os.Bundle? =
+        player.currentMediaItem?.mediaMetadata?.extras
+
+    private fun getDisplayPosition(player: Player): Long {
+        val cumStart = getCurrentExtras(player)?.getLong("cumulativeStartMs", 0L) ?: 0L
+        return cumStart + player.currentPosition.coerceAtLeast(0L)
+    }
+
+    private fun getSurahTotalMs(player: Player): Long {
+        val stored = getCurrentExtras(player)?.getLong("surahTotalMs", 0L) ?: 0L
+        if (stored > 0) return stored
+        val live = player.duration
+        return if (live > 0 && live != androidx.media3.common.C.TIME_UNSET) live else 0L
+    }
+
+    fun seekTo(positionMs: Long) {
+        val player = _player.value ?: return
+        val extras = getCurrentExtras(player)
+        val currentSurateNo = extras?.getInt("sourateNumero", -1) ?: -1
+        val surahTotalMs = extras?.getLong("surahTotalMs", 0L) ?: 0L
+
+        if (currentSurateNo < 0 || surahTotalMs == 0L) {
+            player.seekTo(positionMs)
+            return
+        }
+
+        var surahStartIdx = player.currentMediaItemIndex
+        while (surahStartIdx > 0) {
+            val prevExtras = player.getMediaItemAt(surahStartIdx - 1).mediaMetadata.extras
+            if (prevExtras?.getInt("sourateNumero", -1) == currentSurateNo) surahStartIdx--
+            else break
+        }
+
+        var idx = surahStartIdx
+        while (idx < player.mediaItemCount) {
+            val itemExtras = player.getMediaItemAt(idx).mediaMetadata.extras
+            if (itemExtras?.getInt("sourateNumero", -1) != currentSurateNo) break
+
+            val cumStart = itemExtras.getLong("cumulativeStartMs", 0L)
+            val partDur = itemExtras.getLong("partDurationMs", 0L)
+            val nextCumStart = cumStart + partDur
+            val isLastPart = idx + 1 >= player.mediaItemCount ||
+                    player.getMediaItemAt(idx + 1).mediaMetadata.extras
+                        ?.getInt("sourateNumero", -1) != currentSurateNo
+
+            if (positionMs < nextCumStart || isLastPart) {
+                val offset = (positionMs - cumStart).coerceAtLeast(0L)
+                player.seekTo(idx, offset)
+                return
+            }
+            idx++
+        }
+    }
+
+    // ── Playback control ─────────────────────────────────────────────────
+
+    fun play() {
+        (_player.value as? MediaController)?.play()
+    }
+
+    fun pause() {
+        (_player.value as? MediaController)?.pause()
+    }
+
+    fun togglePlayPause() {
+        val player = _player.value ?: return
+        if (player.isPlaying) player.pause() else player.play()
+    }
+
+    fun seekToNext() {
+        (_player.value as? MediaController)?.seekToNextMediaItem()
+    }
+
+    fun seekToPrevious() {
+        (_player.value as? MediaController)?.seekToPreviousMediaItem()
+    }
+
+    fun seekToNextSurah() {
+        val player = _player.value ?: return
+        val currentSurateNo = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+        if (currentSurateNo < 0) { player.seekToNextMediaItem(); return }
+
+        var idx = player.currentMediaItemIndex + 1
+        while (idx < player.mediaItemCount) {
+            val surateNo = player.getMediaItemAt(idx).mediaMetadata.extras
+                ?.getInt("sourateNumero", -1)
+            if (surateNo != currentSurateNo) {
+                player.seekTo(idx, 0)
+                return
+            }
+            idx++
+        }
+    }
+
+    fun seekToPrevSurah() {
+        val player = _player.value ?: return
+        val currentSurateNo = getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+        if (currentSurateNo < 0) { player.seekToPreviousMediaItem(); return }
+
+        var idx = player.currentMediaItemIndex - 1
+        while (idx >= 0) {
+            if (player.getMediaItemAt(idx).mediaMetadata.extras
+                    ?.getInt("sourateNumero", -1) != currentSurateNo
+            ) break
+            idx--
+        }
+
+        if (idx < 0) {
+            player.seekTo(0, 0)
+            return
+        }
+
+        val prevSurateNo = player.getMediaItemAt(idx).mediaMetadata.extras
+            ?.getInt("sourateNumero", -1)
+        while (idx > 0) {
+            val prevExtras = player.getMediaItemAt(idx - 1).mediaMetadata.extras
+            if (prevExtras?.getInt("sourateNumero", -1) != prevSurateNo) break
+            idx--
+        }
+        player.seekTo(idx, 0)
+    }
+
+    fun setShuffleMode(enabled: Boolean) {
+        (_player.value as? MediaController)?.shuffleModeEnabled = enabled
+    }
+
+    fun toggleShuffleMode() {
+        val player = _player.value ?: return
+        player.shuffleModeEnabled = !player.shuffleModeEnabled
+    }
+
+    // ── Existing public API ──────────────────────────────────────────────
+
     fun setPlaybackMode(mode: PlaybackMode) {
         _playbackMode.value = mode
         val player = _player.value ?: return
@@ -121,11 +320,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /**
-     * Construit l'URI de lecture pour un AudioEntity.
-     * Si l'audio a un fbMessageId, on utilise le schéma messenger://
-     * qui sera résolu par AudioPlayerService en URL CDN temporaire.
-     */
     private fun buildMediaUri(audio: AudioEntity): String {
         return if (!audio.fbMessageId.isNullOrEmpty()) {
             "${AudioPlayerService.MESSENGER_URI_SCHEME}${audio.fbMessageId}"
@@ -134,22 +328,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /**
-     * Builds a human-readable title for a track.
-     * - Single part  : "البقرة"
-     * - Multi-part   : "البقرة — الجزء 2/5"
-     */
     private fun buildTrackTitle(surahName: String?, partNumber: Int, totalParts: Int): String {
         val name = surahName ?: "سورة"
         return if (totalParts > 1) "$name — الجزء $partNumber/$totalParts" else name
     }
 
-    /**
-     * Pre-computes cumulative start offsets and total durations per surah.
-     * Returns a pair of:
-     *   - Map<audioId, cumulativeStartMs>  — offset of this part in the combined timeline
-     *   - Map<sourateNumero, surahTotalMs> — total duration of the full surah
-     */
     private fun buildCumulativeMaps(
         audios: List<AudioEntity>
     ): Pair<Map<Long, Long>, Map<Int, Long>> {
@@ -166,7 +349,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return Pair(cumulativeStartMap, surahTotalMap)
     }
 
-    /** Build a [MediaItem] with all the extra metadata the UI needs. */
     private fun buildMediaItem(
         audio: AudioEntity,
         title: String,
@@ -199,7 +381,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     @Suppress("UNUSED_PARAMETER")
     fun playSurah(surahNumber: Int, surahName: String) {
-        val controller = player.value ?: return
+        val controller = _player.value ?: return
 
         viewModelScope.launch {
             val context = getApplication<Application>()
@@ -249,7 +431,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     @Suppress("UNUSED_PARAMETER")
     fun playSurahWithReciter(surahNumber: Int, surahName: String, reciterId: Int, reciterName: String) {
-        val controller = player.value ?: return
+        val controller = _player.value ?: return
 
         viewModelScope.launch {
             val context = getApplication<Application>()
@@ -295,7 +477,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun playPlaylist(tracks: List<com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistTrack>, startIndex: Int = 0) {
-        val controller = player.value ?: return
+        val controller = _player.value ?: return
 
         if (tracks.isEmpty()) {
             android.util.Log.e("PlayerViewModel", "Playlist is empty")
@@ -313,8 +495,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
             val audioEntities = tracks.map { it.audio }
 
-            // Group by (sourateNumero, reciteurId) so playlists that mix different reciters
-            // for the same surah don't pollute each other's part counts / cumulative offsets.
             val groupKey: (com.alfred.kitabalhuda.database.entity.AudioEntity) -> Pair<Int, Int> =
                 { audio -> Pair(audio.sourateNumero, audio.reciteurId) }
 
@@ -322,7 +502,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 .groupBy(groupKey)
                 .mapValues { (_, parts) -> parts.size }
 
-            // Build cumulative start offsets for each part within its (sourate, reciter) group
             val cumulativeStartMap = mutableMapOf<Long, Long>()
             val surahTotalByKey = mutableMapOf<Pair<Int, Int>, Long>()
             for ((key, parts) in audioEntities.groupBy(groupKey)) {
@@ -354,7 +533,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setSleepTimer(minutes: Int) {
-        val controller = (player.value as? MediaController) ?: return
+        val controller = (_player.value as? MediaController) ?: return
         val command = if (minutes > 0) {
             AudioPlayerService.COMMAND_START_SLEEP_TIMER
         } else {
@@ -364,5 +543,20 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             putInt(AudioPlayerService.EXTRA_MINUTES, minutes)
         }
         controller.sendCustomCommand(androidx.media3.session.SessionCommand(command, android.os.Bundle.EMPTY), args)
+    }
+
+    fun getCurrentSurahNumber(): Int {
+        val player = _player.value ?: return -1
+        return getCurrentExtras(player)?.getInt("sourateNumero", -1) ?: -1
+    }
+
+    fun getCurrentSurahName(): String? {
+        return _player.value?.mediaMetadata?.title?.toString()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopPositionUpdates()
+        MediaController.releaseFuture(controllerFuture)
     }
 }
