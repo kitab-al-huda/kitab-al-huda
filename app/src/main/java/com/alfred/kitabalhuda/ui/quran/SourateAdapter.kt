@@ -71,19 +71,19 @@ class SourateAdapter(
                 // Dim the card and show as unavailable
                 binding.root.alpha = 0.4f
                 binding.textInfo.text = context.getString(com.alfred.kitabalhuda.R.string.surah_unavailable)
-                binding.imgPlaying.visibility = android.view.View.GONE
+                binding.audioBarsView.stopAnim()
                 binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.primary_dark))
             } else {
                 // Render normally
                 binding.root.alpha = 1.0f
                 binding.textInfo.text = "$place • ${sourate.nombreVersets} $ayahs"
 
-                // Show animation if currently playing
+                // Show radial bars animation if currently playing
                 if (sourate.numero == currentlyPlayingSurahNumber) {
-                    binding.imgPlaying.visibility = android.view.View.VISIBLE
+                    binding.audioBarsView.startAnim()
                     binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.gray_800))
                 } else {
-                    binding.imgPlaying.visibility = android.view.View.GONE
+                    binding.audioBarsView.stopAnim()
                     binding.root.setCardBackgroundColor(context.getColor(com.alfred.kitabalhuda.R.color.primary_dark))
                 }
             }

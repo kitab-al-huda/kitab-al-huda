@@ -82,13 +82,11 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="?attr/colorOnSurfaceVariant" />
             
-        <ImageView
-            android:id="@+id/imgPlaying"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_audio_bars"
+        <com.alfred.kitabalhuda.ui.player.AudioBarsRadialView
+            android:id="@+id/audioBarsView"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:visibility="gone"
-            app:tint="@color/primary"
             app:layout_constraintBottom_toBottomOf="@+id/textNumero"
             app:layout_constraintEnd_toEndOf="@+id/textNumero"
             app:layout_constraintStart_toStartOf="@+id/textNumero"

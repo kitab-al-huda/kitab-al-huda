@@ -45,13 +45,11 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/icon_now_playing"
+        <com.alfred.kitabalhuda.ui.player.AudioBarsRadialView
+            android:id="@+id/audioBarsView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_audio_bars"
-            android:visibility="gone"
-            app:tint="@color/huda_teal" />
+            android:visibility="gone" />
 
     </FrameLayout>
 

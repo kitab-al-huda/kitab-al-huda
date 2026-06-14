@@ -89,8 +89,8 @@ class PlaylistDetailAdapter(
 
             // Setup now-playing and highlight states
             if (isPlaying) {
-                // Show waveform, hide standard number
-                binding.iconNowPlaying.visibility = android.view.View.VISIBLE
+                // Show radial bars, hide standard number
+                binding.audioBarsView.startAnim()
                 binding.textTrackNumber.visibility = android.view.View.GONE
 
                 // Color highlight
@@ -104,8 +104,8 @@ class PlaylistDetailAdapter(
                 )
                 binding.trackItemContainer.elevation = 4f
             } else {
-                // Hide waveform, show standard number
-                binding.iconNowPlaying.visibility = android.view.View.GONE
+                // Hide radial bars, show standard number
+                binding.audioBarsView.stopAnim()
                 binding.textTrackNumber.visibility = android.view.View.VISIBLE
 
                 // Set default colors
