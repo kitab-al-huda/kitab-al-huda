@@ -35,6 +35,7 @@ class AudioBarsRadialView @JvmOverloads constructor(
     private val speeds = FloatArray(barCount) { 0.8f + Random.nextFloat() * 1.4f }
 
     private var animator: ValueAnimator? = null
+    private var startTime = 0L
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -48,7 +49,7 @@ class AudioBarsRadialView @JvmOverloads constructor(
         val cx = width / 2f
         val cy = height / 2f
         val angleStep = 360f / barCount
-        val time = System.currentTimeMillis() / 1000f
+        val time = if (startTime > 0) (System.nanoTime() - startTime) / 1_000_000_000f else 0f
 
         canvas.save()
         canvas.translate(cx, cy)
@@ -77,6 +78,7 @@ class AudioBarsRadialView @JvmOverloads constructor(
     fun startAnim() {
         if (visibility != VISIBLE) visibility = VISIBLE
         if (animator?.isRunning == true) return
+        startTime = System.nanoTime()
         animator = ValueAnimator.ofFloat(0f, 1f).apply {
             repeatCount = ValueAnimator.INFINITE
             interpolator = LinearInterpolator()
