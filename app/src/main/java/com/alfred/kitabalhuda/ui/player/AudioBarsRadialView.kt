@@ -32,7 +32,7 @@ class AudioBarsRadialView @JvmOverloads constructor(
 
     private val phases = FloatArray(barCount) { Random.nextFloat() * 360f }
     private val amplitudes = FloatArray(barCount) { 0.4f + Random.nextFloat() * 0.6f }
-    private val speeds = FloatArray(barCount) { 0.8f + Random.nextFloat() * 1.4f }
+    private val speeds = FloatArray(barCount) { 2.4f + Random.nextFloat() * 3.6f }
 
     private var animator: ValueAnimator? = null
     private var startTime = 0L
