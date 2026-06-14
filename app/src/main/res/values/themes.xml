@@ -41,6 +41,9 @@
         <!-- Status Bar -->
         <item name="android:statusBarColor">@color/background</item>
 
+        <!-- Navigation Bar -->
+        <item name="android:navigationBarColor">@color/background</item>
+
         <!-- Text Styles -->
         <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.App.Headline2</item>
