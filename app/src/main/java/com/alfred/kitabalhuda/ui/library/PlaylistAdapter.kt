@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.database.entity.PlaylistEntity
 import com.alfred.kitabalhuda.databinding.ItemPlaylistBinding
+import com.alfred.kitabalhuda.utils.toArabicIndic
 
 class PlaylistAdapter(
     private val onPlaylistClick: (PlaylistEntity) -> Unit,
@@ -28,10 +29,7 @@ class PlaylistAdapter(
         fun bind(playlistWithCount: com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistWithCount) {
             val playlist = playlistWithCount.playlist
             binding.textPlaylistName.text = playlist.name
-            binding.textPlaylistCount.text = binding.root.context.getString(
-                com.alfred.kitabalhuda.R.string.tracks_count,
-                playlistWithCount.trackCount
-            )
+            binding.textPlaylistCount.text = "${playlistWithCount.trackCount.toArabicIndic()} ${binding.root.context.getString(com.alfred.kitabalhuda.R.string.tracks_count)}"
 
             // TODO: Load cover image if available
 

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentPlaylistDetailBinding
+import com.alfred.kitabalhuda.utils.toArabicIndic
 import com.google.android.material.appbar.AppBarLayout
 
 class PlaylistDetailFragment : Fragment() {
@@ -47,6 +48,11 @@ class PlaylistDetailFragment : Fragment() {
         setupUI()
         setupRecyclerView()
         observeViewModel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.notifyDataSetChanged()
     }
 
     private fun setupUI() {
@@ -128,7 +134,7 @@ class PlaylistDetailFragment : Fragment() {
                 binding.textEmptyTracks.visibility = if (tracks.isEmpty()) View.VISIBLE else View.GONE
 
                 // Set total counts in our header dynamically
-                binding.textHeaderTracksCount.text = resources.getString(R.string.tracks_count, tracks.size)
+                binding.textHeaderTracksCount.text = "${tracks.size.toArabicIndic()} ${getString(R.string.tracks_count)}"
             }
         }
 

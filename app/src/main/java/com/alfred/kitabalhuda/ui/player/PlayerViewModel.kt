@@ -2,6 +2,7 @@ package com.alfred.kitabalhuda.ui.player
 
 import android.app.Application
 import android.content.ComponentName
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,7 +16,9 @@ import com.alfred.kitabalhuda.KitabAlHudaApplication
 import com.alfred.kitabalhuda.database.entity.AudioEntity
 import com.alfred.kitabalhuda.repository.AudioRepository
 import com.alfred.kitabalhuda.service.AudioPlayerService
+import com.alfred.kitabalhuda.utils.PreferenceManager
 import com.alfred.kitabalhuda.utils.toArabicIndic
+import androidx.preference.PreferenceManager as AndroidXPreferenceManager
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +65,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 _player.value = controller
                 if (controller != null) {
                     attachPlayerListener(controller)
+                    applyPlaybackSpeed(controller)
                 }
             } catch (e: Exception) {
                 _playerUiState.value = PlayerUiState.Error(
@@ -70,6 +74,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 e.printStackTrace()
             }
         }, MoreExecutors.directExecutor())
+
+        // Apply playback speed changes on-the-fly
+        val prefs = AndroidXPreferenceManager.getDefaultSharedPreferences(application)
+        prefs.registerOnSharedPreferenceChangeListener { _, key ->
+            if (key == "playback_speed") {
+                _player.value?.let { applyPlaybackSpeed(it) }
+            }
+        }
     }
 
     // ── Player listener ──────────────────────────────────────────────────
@@ -229,6 +241,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
             idx++
         }
+    }
+
+    private fun applyPlaybackSpeed(player: Player) {
+        val speed = PreferenceManager.getPlaybackSpeed(getApplication())
+        player.setPlaybackSpeed(speed)
     }
 
     // ── Playback control ─────────────────────────────────────────────────
@@ -424,6 +441,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 controller.setMediaItems(mediaItems, startIndex, 0)
                 controller.prepare()
                 controller.play()
+                applyPlaybackSpeed(controller)
             } else {
                 android.util.Log.e("PlayerViewModel", "No audios or sourates found for reciter $reciteurId")
             }
@@ -471,6 +489,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 controller.setMediaItems(mediaItems, startIndex, 0)
                 controller.prepare()
                 controller.play()
+                applyPlaybackSpeed(controller)
             } else {
                 android.util.Log.e("PlayerViewModel", "No audios or sourates found for reciter $reciterId")
             }
@@ -530,6 +549,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             controller.setMediaItems(mediaItems, startIndex, 0)
             controller.prepare()
             controller.play()
+            applyPlaybackSpeed(controller)
         }
     }
 

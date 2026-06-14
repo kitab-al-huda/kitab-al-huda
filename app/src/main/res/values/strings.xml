@@ -53,17 +53,18 @@
     <string name="delete_playlist_confirmation">هل أنت متأكد أنك تريد حذف هذه القائمة؟</string>
     <string name="delete">حذف</string>
     <string name="sleep_timer">مؤقت النوم</string>
-    <string name="sleep_timer_set">تم ضبط مؤقت النوم لـ %1$d دقيقة</string>
+    <string name="sleep_timer_set">تم ضبط مؤقت النوم لـ %s دقيقة</string>
     <string name="sleep_timer_off">تم إيقاف مؤقت النوم</string>
     <string name="filter_all">الكل</string>
     <string name="filter_mecca">مكية</string>
     <string name="filter_medina">مدنية</string>
     
     <string name="tab_downloads">التحميلات</string>
+    <string name="downloads_coming_soon">قريباً… هذه الميزة قيد التطوير</string>
     <string name="tab_history">السجل</string>
     <string name="tab_playlists">قوائمي</string>
     <string name="ayahs_count">آيات</string>
-    <string name="tracks_count">%d مقاطع</string>
+    <string name="tracks_count">مقاطع</string>
 
     <string name="coming_soon">قريباً</string>
     <string name="surah_unavailable">غير متوفر لهذا القارئ</string>
@@ -105,6 +106,34 @@
     <!-- Playlist -->
     <string name="playlist_tag">قائمة التشغيل</string>
     <string name="play_pause">تشغيل / إيقاف</string>
+
+    <!-- Number Style -->
+    <string name="number_style">نمط الأرقام</string>
+    <string name="arabic_indic">عربية شرقية (٠١٢٣)</string>
+    <string name="standard_digits">عربية غربية (0123)</string>
+
+    <!-- Playback Speed -->
+    <string name="playback_speed">سرعة القراءة</string>
+    <string name="speed_050">٠٫٥×</string>
+    <string name="speed_075">٠٫٧٥×</string>
+    <string name="speed_normal">١× (عادي)</string>
+    <string name="speed_125">١٫٢٥×</string>
+    <string name="speed_150">١٫٥×</string>
+    <string name="speed_200">٢×</string>
+
+    <!-- About → parametres -->
+    <string name="about_title">حول التطبيق</string>
+    <string name="about_version">الإصدار 1.0</string>
+    <string name="about_intro_title">نبذة عن كتاب الهدى</string>
+    <string name="about_intro_body">تطبيق إسلامي يهدف إلى تسهيل الاستماع إلى القرآن الكريم والمحاضرات الدينية والمحتوى الروحي الإسلامي عبر منصة تقدم محتوى رقمي تفاعلي للمستخدمين في جميع أنحاء العالم.</string>
+    <string name="about_zero_rated_title">ما هي خاصية Zero-Rated؟</string>
+    <string name="about_zero_rated_body">صُمم التطبيق ليدعم المستخدمين الذين يمتلكون باقات إنترنت اجتماعية فقط. بدلاً من الاعتماد كلياً على خوادم عادية، يستخدم التطبيق خوادم ميتا (Meta) جزئياً كخادم تخزين وسيط إلى جانب الخوادم العادية، وذلك لتقديم المحتوى الصوتي لبعض القراء بصيغة zero-rated دون احتساب استهلاك البيانات من رصيد الإنترنت العادي.\n\nالقراء الذين يحملون شارة "مجاني" هم الذين تتوفر تلاواتهم بصيغة zero-rated، مما يعني إمكانية الاستماع إليهم دون استهلاك رصيد الإنترنت العادي.</string>
+    <string name="about_how_works_title">كيف تعمل؟</string>
+    <string name="about_how_works_body">عند تشغيل مقطع صوتي، يقوم التطبيق بجلب رابط التحميل المؤقت من خوادم ميتا، ثم يشغله مباشرة. يتم تخزين الروابط مؤقتاً لتقليل الطلبات وتحسين الأداء. كل المحتوى يُشغل عبر تقنية البث المباشر ولا يُخزن بشكل دائم على جهازك.</string>
+    <string name="about_security_title">الأمان والخصوصية</string>
+    <string name="about_security_body">نحن نهتم بخصوصيتك. التطبيق لا يجمع أي معلومات شخصية دون موافقتك. جميع بيانات الاعتماد مشفرة بشكل كامل باستخدام معايير AES-256-CBC، ولا يمكن لأي طرف ثالث الوصول إليها. الروابط المؤقتة تنتهي صلاحيتها تلقائياً بعد فترة قصيرة.</string>
+    <string name="about_credits_title">الشكر والتقدير</string>
+    <string name="about_credits_body">نشكر جميع القراء والمشايخ الذين ساهموا في إثراء المحتوى، وكذلك فريق التطوير على الجهود المبذولة لإخراج هذا التطبيق بأفضل صورة. جزاهم الله خيراً.</string>
 
     <!-- Internal App Configurations -->
     <string name="app_build_signature">K1tab@Huda#2026</string>

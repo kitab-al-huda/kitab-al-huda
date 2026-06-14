@@ -11,7 +11,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.FragmentFullPlayerBinding
-import java.util.concurrent.TimeUnit
+import com.alfred.kitabalhuda.utils.formatDurationArabic
+import com.alfred.kitabalhuda.utils.toArabicIndic
 
 class FullPlayerFragment : BottomSheetDialogFragment() {
 
@@ -92,7 +93,7 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
             val bottomSheet = SleepTimerBottomSheet { minutes ->
                 viewModel.setSleepTimer(minutes)
                 val message = if (minutes > 0) {
-                    getString(R.string.sleep_timer_set, minutes)
+                    getString(R.string.sleep_timer_set, minutes.toArabicIndic())
                 } else {
                     getString(R.string.sleep_timer_off)
                 }
@@ -221,9 +222,7 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
     }
 
     private fun formatTime(ms: Long): String {
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(ms)
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
-        return String.format("%02d:%02d", minutes, seconds)
+        return (ms / 1000).formatDurationArabic()
     }
 
     private fun setupFragmentResultListeners() {

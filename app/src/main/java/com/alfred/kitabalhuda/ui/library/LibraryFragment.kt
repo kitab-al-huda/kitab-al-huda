@@ -52,7 +52,7 @@ class LibraryFragment : Fragment() {
             return when (position) {
                 0 -> PlaylistListFragment.newInstance()
                 1 -> HistoryFragment.newInstance()
-                2 -> Fragment()  // Placeholder for Downloads
+                2 -> DownloadsFragment.newInstance()
                 else -> Fragment()
             }
         }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.alfred.kitabalhuda.utils.CsvHelper
+import com.alfred.kitabalhuda.utils.DigitHelper
 
 class KitabAlHudaApplication : Application(), Configuration.Provider {
 
@@ -32,6 +33,9 @@ class KitabAlHudaApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         
+        // Init digit style preference
+        DigitHelper.useArabicIndic = PreferenceManager.isArabicIndicEnabled(this)
+
         // Force Arabic Locale
         val locale = Locale("ar")
         val localeList = LocaleListCompat.create(locale)
