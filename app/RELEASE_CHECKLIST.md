@@ -4,16 +4,15 @@
 
 ---
 
-## 🔴 Milestone 1 — Critique (bloquant release)
+## ✅ Milestone 1 — Critique (Terminé — commit `bd33ffe`)
 
-- [ ] **Toasts anglais → strings.xml**
-  - `QuranFragment.kt:64` — `"Playing: ${sourate.nomArabe}"`
-  - `AddToPlaylistBottomSheet.kt:68` — `"Added to ${playlist.name} (${audioIds.size} parts)"`
-  - `AddToPlaylistBottomSheet.kt:70` — `"Added to ${playlist.name}"`
-- [ ] **Permission `POST_NOTIFICATIONS`** — Ajouter dans `AndroidManifest.xml` (API 33+)
-- [ ] **`android:exported="false"`** sur `MainActivity` et `AudioPlayerService` (sauf si justifié)
-- [ ] **`fallbackToDestructiveMigration()`** — Remplacer par des migrations Room explicites + `exportSchema = true`
-- [ ] **Lint `UnsafeOptInUsageError`** — Ajouter `@OptIn` sur `ResolvingDataSource.Factory` dans `AudioPlayerService.kt:47`
+- [x] **Toasts anglais → strings.xml**
+  - `QuranFragment.kt:64` → `getString(R.string.playing_surah)`
+  - `AddToPlaylistBottomSheet.kt:68,70` → `getString(R.string.added_to_playlist*)` + `toArabicIndic()`
+- [x] **Permission `POST_NOTIFICATIONS`** — Ajoutée dans `AndroidManifest.xml`
+- [x] **`android:exported="false"`** sur `MainActivity` et `AudioPlayerService`
+- [x] **Room schema export** — `exportSchema = true` + `kapt schemaLocation` + schéma v7 exporté
+- [x] **Lint `UnsafeOptInUsageError`** — `@SuppressLint` + `@OptIn` sur `AudioPlayerService` → **0 erreur lint**
 
 ---
 
