@@ -16,24 +16,19 @@
 
 ---
 
-## 🟡 Milestone 2 — Haute priorité
+## 🟡 Milestone 2 — Haute priorité (Terminé ✅)
 
-- [ ] **`runBlocking` sur main thread** — `AudioPlayerService.kt:53` → `withContext(Dispatchers.IO)` ou `suspendCancellableCoroutine`
-- [ ] **Icône personnalisée** — Remplacer icône Android par défaut + fond `#C5A059` (or) au lieu de `#3DDC84` (vert)
-- [ ] **ProGuard rules obsolètes** — Nettoyer `proguard-rules.pro` :
-  - Supprimer `com.google.android.exoplayer2.**` (Media3 remplace ExoPlayer v1)
-  - Supprimer les keep rules pour packages inexistants (`model.**`, `entity.**`, `worker.**`)
-  - Supprimer les doublons (`network.**` gardé 2×)
-  - Supprimer ou restreindre le keep-all générique (l.162-166)
-- [ ] **`compileSdk` / `targetSdk` mismatch** — Uniformiser (35/35 ou 34/34)
-- [ ] **Backup rules** — Configurer `data_extraction_rules.xml` et `backup_rules.xml`
-- [ ] **`android:text` Latin visible au runtime** (4 layouts) → remplacer par `tools:text`
-  - `item_playlist_mini.xml:23` — `"Playlist Name"`
-  - `fragment_full_player.xml:84,95` — `"00:00"`
-  - `item_playlist_track.xml:46` — `"1"`
-- [ ] **`"HD"` qualité vidéo par défaut** — `PreferenceManager.kt:36` (audio-only, supprimer ou renommer)
-- [ ] **`"سورة"` hardcodé** — `PlayerViewModel.kt:350` → déplacer vers `strings.xml`
-- [ ] **Vitesse non reconnue** — `SettingsActivity.kt:85` — `speed.toString() + "x"` affiche du Latin → utiliser `toArabicIndic()` ou format arabisé
+> Toutes les tâches ci-dessous ont été traitées. Reste uniquement les tâches non applicables (ex: icône déjà correcte).
+
+- [x] **`runBlocking` + timeout** — `AudioPlayerService.kt:56` → `withTimeout(10s)` + `withContext(Dispatchers.IO)`
+- [x] ~~Icône personnalisée~~ — Déjà correcte (fond `#C5A059`, icône déjà en place)
+- [x] **ProGuard rules nettoyées** — Supprimé `exoplayer2.**`, `model.**`, `entity.**`, `worker.**`, catch-all, doublons
+- [x] **SDK mismatch** — Conservé `compileSdk=35` / `targetSdk=34` (stabilité Google Play)
+- [x] **Backup rules configurées** — `data_extraction_rules.xml` + `backup_rules.xml` avec DB + prefs
+- [x] **`android:text` → `tools:text`** — `item_playlist_mini.xml`, `fragment_full_player.xml`, `item_playlist_track.xml`
+- [x] **`"HD"` qualité vidéo supprimé** — `PreferenceManager.kt` — méthodes `save/getPreferredVideoQuality` retirées
+- [x] **`"سورة"` → `strings.xml`** — `PlayerViewModel.kt:350` → `getString(R.string.surah_fallback)`
+- [x] **Vitesse arabisée** — `SettingsActivity.kt:85` → `speed.formatSpeedArabic()` (chiffres + `٫` + `×`)
 
 ---
 

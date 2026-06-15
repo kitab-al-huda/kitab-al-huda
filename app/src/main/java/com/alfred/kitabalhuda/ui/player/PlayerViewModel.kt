@@ -12,6 +12,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.KitabAlHudaApplication
 import com.alfred.kitabalhuda.database.entity.AudioEntity
 import com.alfred.kitabalhuda.repository.AudioRepository
@@ -347,7 +348,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun buildTrackTitle(surahName: String?, partNumber: Int, totalParts: Int): String {
-        val name = surahName ?: "سورة"
+        val name = surahName ?: getApplication<KitabAlHudaApplication>().getString(R.string.surah_fallback)
         return if (totalParts > 1) "$name — الجزء ${partNumber.toArabicIndic()}/${totalParts.toArabicIndic()}" else name
     }
 

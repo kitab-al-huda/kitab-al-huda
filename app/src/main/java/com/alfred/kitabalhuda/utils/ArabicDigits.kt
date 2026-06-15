@@ -20,6 +20,18 @@ fun Long.toArabicIndic(): String {
     }.joinToString("")
 }
 
+fun Float.formatSpeedArabic(): String {
+    if (!DigitHelper.useArabicIndic) return "${this}x"
+    val s = if (this == this.toLong().toFloat()) this.toLong().toString() else this.toString()
+    return s.map { c ->
+        when {
+            c.isDigit() -> arabicIndicDigits[c - '0']
+            c == '.' -> '٫'
+            else -> c
+        }
+    }.joinToString("") + "×"
+}
+
 fun Long.formatDurationArabic(): String {
     if (this < 0) return ""
     val minutes = this / 60

@@ -6,7 +6,6 @@ import androidx.preference.PreferenceManager as AndroidPreferenceManager
 object PreferenceManager {
     private const val KEY_LAST_SYNC_TIME = "last_sync_time"
     private const val KEY_AUTOPLAY_ENABLED = "autoplay_enabled"
-    private const val KEY_PREFERRED_VIDEO_QUALITY = "preferred_video_quality"
     private const val KEY_PLAYBACK_SPEED = "playback_speed"
     private const val KEY_USE_ARABIC_INDIC = "use_arabic_indic"
 
@@ -24,16 +23,6 @@ object PreferenceManager {
     fun getLastSyncTime(context: Context): Long {
         val prefs = AndroidPreferenceManager.getDefaultSharedPreferences(context)
         return prefs.getLong(KEY_LAST_SYNC_TIME, 0)
-    }
-
-    fun savePreferredVideoQuality(context: Context, quality: String) {
-        val prefs = AndroidPreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().putString(KEY_PREFERRED_VIDEO_QUALITY, quality).apply()
-    }
-
-    fun getPreferredVideoQuality(context: Context): String {
-        val prefs = AndroidPreferenceManager.getDefaultSharedPreferences(context)
-        return prefs.getString(KEY_PREFERRED_VIDEO_QUALITY, "HD") ?: "HD" // Default to HD
     }
 
     fun setAutoplayEnabled(context: Context, enabled: Boolean) {

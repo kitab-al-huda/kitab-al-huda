@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.ResolvingDataSource
@@ -53,7 +55,13 @@ class AudioPlayerService : MediaLibraryService() {
             val uri = dataSpec.uri
             if (uri.scheme == "messenger") {
                 val messageId = uri.host ?: uri.path?.removePrefix("/") ?: uri.toString().removePrefix(MESSENGER_URI_SCHEME)
-                val cdnUrl = runBlocking { messengerRepository.resolveAudioUrl(messageId) }
+                val cdnUrl = runBlocking {
+    withTimeout(10_000L) {
+        withContext(Dispatchers.IO) {
+            messengerRepository.resolveAudioUrl(messageId)
+        }
+    }
+}
                 if (cdnUrl != null) {
                     Log.d(TAG, "Lazy resolved messenger URI to CDN: ${cdnUrl.take(80)}...")
                     dataSpec.buildUpon().setUri(android.net.Uri.parse(cdnUrl)).build()

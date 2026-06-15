@@ -84,6 +84,7 @@
 
     <!-- Internal App Configurations -->
     <!-- Arabic UI: No Latin text -->
+    <string name="surah_fallback">سورة</string>
     <string name="audio_not_found">لم يتم العثور على الصوت</string>
     <string name="playlist_created">تم إنشاء قائمة التشغيل</string>
     <string name="enter_name_please">الرجاء إدخال اسم</string>

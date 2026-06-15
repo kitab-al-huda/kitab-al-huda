@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.utils.DigitHelper
 import com.alfred.kitabalhuda.utils.PreferenceManager
+import com.alfred.kitabalhuda.utils.formatSpeedArabic
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SettingsActivity : AppCompatActivity() {
@@ -82,7 +83,7 @@ class SettingsActivity : AppCompatActivity() {
                     1.25f -> getString(R.string.speed_125)
                     1.5f -> getString(R.string.speed_150)
                     2.0f -> getString(R.string.speed_200)
-                    else -> speed.toString() + "x"
+                    else -> speed.formatSpeedArabic()
                 }
             }.toTypedArray()
             val checkedIndex = speeds.indexOf(currentSpeed).coerceAtLeast(0)
