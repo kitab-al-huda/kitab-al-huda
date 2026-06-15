@@ -43,7 +43,6 @@ class HistoryFragment : Fragment() {
             // Play from this track with the stored reciter
             playerViewModel.playSurahWithReciter(
                 historyItem.sourate.numero,
-                historyItem.sourate.nomArabe,
                 historyItem.reciteur.id,
                 historyItem.reciteur.nom
             )

@@ -1,6 +1,7 @@
 package com.alfred.kitabalhuda.utils
 
 import android.content.Context
+import android.util.Log
 import com.alfred.kitabalhuda.database.AppDatabase
 import com.alfred.kitabalhuda.database.entity.AudioEntity
 import com.alfred.kitabalhuda.database.entity.ReciteurEntity
@@ -41,7 +42,7 @@ object CsvHelper {
                 database.audioDao().insertAll(afasyAudios)
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("CsvHelper", "Failed to populate database", e)
             }
         }
     }

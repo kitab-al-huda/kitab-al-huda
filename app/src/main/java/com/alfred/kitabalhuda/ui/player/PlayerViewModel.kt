@@ -2,6 +2,7 @@ package com.alfred.kitabalhuda.ui.player
 
 import android.app.Application
 import android.content.ComponentName
+import android.util.Log
 import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -70,9 +71,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             } catch (e: Exception) {
                 _playerUiState.value = PlayerUiState.Error(
-                    e.localizedMessage ?: "Failed to connect to player service"
+                    e.localizedMessage ?: application.getString(R.string.msg_connect_failed)
                 )
-                e.printStackTrace()
+                Log.e("PlayerViewModel", "Failed to connect to player service", e)
             }
         }, MoreExecutors.directExecutor())
 
@@ -398,8 +399,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             .build()
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun playSurah(surahNumber: Int, surahName: String) {
+    fun playSurah(surahNumber: Int) {
         val controller = _player.value ?: return
 
         viewModelScope.launch {
@@ -449,8 +449,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun playSurahWithReciter(surahNumber: Int, surahName: String, reciterId: Int, reciterName: String) {
+    fun playSurahWithReciter(surahNumber: Int, reciterId: Int, reciterName: String) {
         val controller = _player.value ?: return
 
         viewModelScope.launch {

@@ -1,6 +1,7 @@
 package com.alfred.kitabalhuda.repository
 
 import android.content.Context
+import android.os.SystemClock
 import android.util.Log
 import android.util.LruCache
 import com.alfred.kitabalhuda.BuildConfig
@@ -81,7 +82,7 @@ class MessengerRepository private constructor(context: Context) {
             val cdnUrl = attachmentData?.videoData?.url
                 ?: attachmentData?.fileUrl
 
-            if (cdnUrl != null) {
+            if (cdnUrl != null && (cdnUrl.startsWith("http://") || cdnUrl.startsWith("https://"))) {
                 urlCache.put(messageId, CachedUrl(cdnUrl))
                 Log.d(TAG, "Resolved $messageId → ${cdnUrl.take(80)}...")
             } else {
@@ -101,11 +102,11 @@ class MessengerRepository private constructor(context: Context) {
      */
     private data class CachedUrl(
         val url: String,
-        val timestamp: Long = System.currentTimeMillis()
+        val timestamp: Long = SystemClock.elapsedRealtime()
     ) {
         fun isExpired(): Boolean {
             val ttlMillis = 45 * 60 * 1000L // 45 minutes (marge de sécurité vs 1h)
-            return System.currentTimeMillis() - timestamp > ttlMillis
+            return SystemClock.elapsedRealtime() - timestamp > ttlMillis
         }
     }
 }

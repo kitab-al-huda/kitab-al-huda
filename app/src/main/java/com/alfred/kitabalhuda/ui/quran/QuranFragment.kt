@@ -62,17 +62,16 @@ class QuranFragment : Fragment() {
                     }
                     if (audioExists) {
                         Toast.makeText(context, getString(R.string.playing_surah, sourate.nomArabe), Toast.LENGTH_SHORT).show()
-                        playerViewModel.playSurah(sourate.numero, sourate.nomArabe)
+                        playerViewModel.playSurah(sourate.numero)
                     } else {
                         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("سورة غير متوفرة")
-                            .setMessage("هذه السورة غير متوفرة حالياً لهذا القارئ بصيغة مجانية (zero-rated). هل تود الاستماع إليها بصوت القارئ مشاري بن راشد العفاسي؟")
-                            .setPositiveButton("الاستماع بصوت العفاسي") { _, _ ->
+                            .setTitle(R.string.surah_unavailable_title)
+                            .setMessage(getString(R.string.surah_unavailable_message, getString(R.string.reciter_default_name)))
+                            .setPositiveButton(getString(R.string.listen_with_reciter, getString(R.string.reciter_default_name))) { _, _ ->
                                 playerViewModel.playSurahWithReciter(
                                     sourate.numero,
-                                    sourate.nomArabe,
                                     1, // Al-Afasy ID
-                                    "مشاري بن راشد العفاسي"
+                                    getString(R.string.reciter_default_name)
                                 )
                             }
                             .setNegativeButton("إلغاء", null)
@@ -226,7 +225,6 @@ class QuranFragment : Fragment() {
 
             playerViewModel.playSurahWithReciter(
                 sourateNumero,
-                sourateNom,
                 reciterId,
                 reciterName
             )

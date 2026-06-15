@@ -134,7 +134,7 @@ class AudioPlayerService : MediaLibraryService() {
                 try {
                     player.volume = startVolume * (millisUntilFinished.toFloat() / fadeDuration)
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e(TAG, "Error during fadeOut tick", e)
                 }
             }
             override fun onFinish() {
@@ -142,7 +142,7 @@ class AudioPlayerService : MediaLibraryService() {
                     player.pause()
                     player.volume = startVolume // Reset volume for next play
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e(TAG, "Error during fadeOut finish", e)
                 }
             }
         }

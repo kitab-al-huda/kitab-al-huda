@@ -1,6 +1,7 @@
 package com.alfred.kitabalhuda.utils
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.InputStreamReader
@@ -34,7 +35,7 @@ object HadithManager {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("HadithManager", "Failed to load hadith", e)
             null
         }
     }

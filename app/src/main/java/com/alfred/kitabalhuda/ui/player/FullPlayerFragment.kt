@@ -239,7 +239,7 @@ class FullPlayerFragment : BottomSheetDialogFragment() {
                 com.alfred.kitabalhuda.utils.ReciterPreferences.setSelectedReciter(
                     requireContext(), reciterId, reciterName
                 )
-                viewModel.playSurahWithReciter(surahNo, currentTitle, reciterId, reciterName)
+                viewModel.playSurahWithReciter(surahNo, reciterId, reciterName)
             }
         }
     }

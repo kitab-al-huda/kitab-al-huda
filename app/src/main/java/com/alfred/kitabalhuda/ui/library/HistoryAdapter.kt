@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.database.dao.ListeningHistoryDao
 import com.alfred.kitabalhuda.databinding.ItemHistoryBinding
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class HistoryAdapter(
@@ -24,12 +26,14 @@ class HistoryAdapter(
     }
 
     inner class ViewHolder(private val binding: ItemHistoryBinding) : RecyclerView.ViewHolder(binding.root) {
-        private val dateFormat = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+        private val dateFormat = DateTimeFormatter.ofPattern("MMM dd, HH:mm", Locale("ar"))
         
         fun bind(item: ListeningHistoryDao.HistoryItem) {
             binding.textSurahName.text = item.sourate.nomArabe
             binding.textReciterName.text = item.reciteur.nom
-            binding.textTimestamp.text = dateFormat.format(Date(item.history.timestamp))
+            binding.textTimestamp.text = dateFormat.format(
+                Instant.ofEpochMilli(item.history.timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()
+            )
             binding.root.setOnClickListener { onClick(item) }
         }
     }

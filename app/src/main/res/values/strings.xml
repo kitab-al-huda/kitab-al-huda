@@ -70,6 +70,11 @@
 
     <string name="coming_soon">قريباً</string>
     <string name="surah_unavailable">غير متوفر لهذا القارئ</string>
+    <string name="msg_connect_failed">فشل الاتصال بخدمة التشغيل</string>
+    <string name="reciter_default_name">مشاري بن راشد العفاسي</string>
+    <string name="surah_unavailable_title">سورة غير متوفرة</string>
+    <string name="surah_unavailable_message">هذه السورة غير متوفرة حالياً لهذا القارئ بصيغة مجانية (zero-rated). هل تود الاستماع إليها بصوت القارئ %s؟</string>
+    <string name="listen_with_reciter">الاستماع بصوت %s</string>
     <string name="badge_free">مجاني</string>
 
     <!-- Reciter Selection -->

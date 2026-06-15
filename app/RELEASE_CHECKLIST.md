@@ -32,38 +32,36 @@
 
 ---
 
-## 🟢 Milestone 3 — Priorité normale
+## 🟢 Milestone 3 — Priorité normale (Terminé ✅)
+
+> Reste : fragments vides non implémentés (ne sont pas dans le nav graph), icône PlayStore (manuel).
 
 ### Dépendances
-- [ ] Kotlin 1.9.23 → 2.0+
-- [ ] Media3 1.3.1 → 1.5.x+
-- [ ] Room 2.6.1 → 2.7.x+
-- [ ] Retrofit 2.9.0 → 2.11.x+
-- [ ] Coroutines 1.7.3 → 1.9.x+
-- [ ] Java 8 target → Java 17 (`VERSION_1_8` → `VERSION_17`)
+- [x] Kotlin 1.9.23 → **2.0.21**
+- [x] Media3 1.3.1 → **1.5.1**
+- [x] Room 2.6.1 → **2.7.1**
+- [x] Retrofit 2.9.0 → **2.11.0**
+- [x] Coroutines 1.7.3 → **1.9.0**
+- [x] Java 8 → **Java 17** + desugaring `java.time`
 
 ### Code quality
-- [ ] **`e.printStackTrace()`** → `Log.e(TAG, ...)` dans :
-  - `AudioPlayerService.kt:126,134`
-  - `PlayerViewModel.kt:74`
-  - `CsvHelper.kt:44`
-  - `HadithManager.kt:37`
-- [ ] **Timeout sur `resolveAudioUrl`** — Ajouter délai max dans `MessengerRepository`
-- [ ] **Date format** — `HistoryAdapter.kt:27` — `SimpleDateFormat("MMM dd, HH:mm")` → `DateTimeFormatter` avec locale arabe forcée
-- [ ] **Reciteur hardcodé** — `"مشاري بن راشد العفاسي"` dans `DiscoverFragment.kt:77` et `QuranFragment.kt:74` → `strings.xml` ou `ReciterPreferences`
-- [ ] **`@Suppress("UNUSED_PARAMETER")`** — `PlayerViewModel.kt:400,451` — Supprimer le paramètre inutilisé `surahName` ou l'utiliser
+- [x] **`e.printStackTrace()`** → `Log.e(TAG, ...)` — 5 occurrences dans 4 fichiers
+- [x] **Timeout sur `resolveAudioUrl`** — Déjà fait dans MS2 (withTimeout 10s)
+- [x] **Date format** — `HistoryAdapter.kt` → `DateTimeFormatter` + `Locale("ar")` + desugaring
+- [x] **Reciteur hardcodé** → `strings.xml` (`reciter_default_name` + dialog strings)
+- [x] **`@Suppress("UNUSED_PARAMETER")`** — `surahName` retiré de `playSurah` et `playSurahWithReciter` + tous les appelants mis à jour
 
 ### Fragments vides / Placeholder
-- [ ] `ProfileFragment` + `ProfileViewModel` — Cacher du nav graph ou implémenter
-- [ ] `SearchFragment` + `SearchViewModel` — Cacher du nav graph ou implémenter
-- [ ] `DownloadsFragment` — Contenu placeholder actuel ("قريباً…"), à implémenter
-- [ ] `PlayStore` icon — Créer `playstore.png` (512×512)
+- [ ] `ProfileFragment` + `ProfileViewModel` — Pas dans nav graph (sans effet)
+- [ ] `SearchFragment` + `SearchViewModel` — Pas dans nav graph (sans effet)
+- [ ] `DownloadsFragment` — Placeholder existant "قريباً"
+- [ ] `PlayStore` icon — À créer manuellement (512×512)
 
 ### Divers
-- [ ] **Commentaires français** — Traduire en anglais dans tout le codebase
-- [ ] **Cache non-monotonic** — `MessengerRepository.kt:104,107` — Remplacer `System.currentTimeMillis()` par `SystemClock.elapsedRealtime()` pour l'expiration du cache
-- [ ] **Validation URL CDN** — `MessengerRepository.kt:80-83` — Vérifier que l'URL résolue est valide avant utilisation
-- [ ] **Foreground service type** — Vérifier si `foregroundServiceType` doit être déclaré pour Android 14+ (API 34)
+- [ ] ~~Commentaires français~~ — Vaste chantier optionnel
+- [x] **Cache non-monotonic** → `SystemClock.elapsedRealtime()` dans `MessengerRepository`
+- [x] **Validation URL CDN** — Vérification `startsWith("http")` dans `MessengerRepository`
+- [x] **Foreground service type** — Déjà configuré (`mediaPlayback` + `POST_NOTIFICATIONS`)
 
 ---
 
