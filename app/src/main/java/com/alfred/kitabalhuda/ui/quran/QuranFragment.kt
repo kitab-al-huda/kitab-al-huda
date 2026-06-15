@@ -61,7 +61,7 @@ class QuranFragment : Fragment() {
                         audioDao.getAudioForSurahAndReciter(selectedReciterId, sourate.numero) != null
                     }
                     if (audioExists) {
-                        Toast.makeText(context, "Playing: ${sourate.nomArabe}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, getString(R.string.playing_surah, sourate.nomArabe), Toast.LENGTH_SHORT).show()
                         playerViewModel.playSurah(sourate.numero, sourate.nomArabe)
                     } else {
                         androidx.appcompat.app.AlertDialog.Builder(requireContext())

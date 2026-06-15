@@ -8,7 +8,9 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alfred.kitabalhuda.database.entity.PlaylistEntity
+import com.alfred.kitabalhuda.R
 import com.alfred.kitabalhuda.databinding.BottomSheetAddToPlaylistBinding
+import com.alfred.kitabalhuda.utils.toArabicIndic
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
@@ -62,12 +64,11 @@ class AddToPlaylistBottomSheet : BottomSheetDialogFragment() {
 
     private fun addToPlaylist(playlist: PlaylistEntity) {
         if (audioIds.isNotEmpty()) {
-            // Adds all parts of the surah so multi-part surahs play fully from the playlist
             viewModel.addTracksToPlaylist(playlist.id, audioIds)
             val msg = if (audioIds.size > 1) {
-                "Added to ${playlist.name} (${audioIds.size} parts)"
+                getString(R.string.added_to_playlist_parts, playlist.name, audioIds.size.toArabicIndic())
             } else {
-                "Added to ${playlist.name}"
+                getString(R.string.added_to_playlist, playlist.name)
             }
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             dismiss()

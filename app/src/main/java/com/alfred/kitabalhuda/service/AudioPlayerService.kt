@@ -1,5 +1,6 @@
 package com.alfred.kitabalhuda.service
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -17,8 +18,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+@SuppressLint("UnsafeOptInUsageError")
+@OptIn(UnstableApi::class)
 class AudioPlayerService : MediaLibraryService() {
 
     private lateinit var player: ExoPlayer
@@ -42,7 +46,6 @@ class AudioPlayerService : MediaLibraryService() {
         super.onCreate()
         messengerRepository = MessengerRepository.getInstance(this)
 
-        // Configuration du Lazy Loading (Résolution juste avant lecture)
         val defaultDataSourceFactory = DefaultDataSource.Factory(this)
         val resolvingDataSourceFactory = ResolvingDataSource.Factory(
             defaultDataSourceFactory
