@@ -201,9 +201,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun getSurahTotalMs(player: Player): Long {
         val stored = getCurrentExtras(player)?.getLong("surahTotalMs", 0L) ?: 0L
-        if (stored > 0) return stored
         val live = player.duration
-        return if (live > 0 && live != androidx.media3.common.C.TIME_UNSET) live else 0L
+        val liveMs = if (live > 0 && live != androidx.media3.common.C.TIME_UNSET) live else 0L
+        return if (stored > 0 && liveMs > 0 && stored >= liveMs) stored else liveMs
     }
 
     fun seekTo(positionMs: Long) {

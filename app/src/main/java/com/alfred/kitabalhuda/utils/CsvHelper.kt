@@ -113,7 +113,7 @@ object CsvHelper {
                             // Exclure les réciteurs ayant des fichiers audio zero-rated dédiés
                             if (reciteurId != 1 && reciteurId != 6) {
                                 val sourateNumero = tokens[1].trim().toInt()
-                                val duree = tokens[2].trim().toLong()
+                                val duree = tokens[2].trim().toLong() * 1000L // CSV stores seconds, convert to ms
                                 val urlWeb = tokens[3].trim()
                                 val pathLocal = if (tokens.size > 4 && tokens[4].trim().isNotEmpty()) tokens[4].trim() else null
                                 list.add(AudioEntity(reciteurId = reciteurId, sourateNumero = sourateNumero, duree = duree, urlWeb = urlWeb, pathLocal = pathLocal))
