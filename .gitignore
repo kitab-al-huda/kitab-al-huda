@@ -29,6 +29,9 @@ app/release/
 
 # Local test databases and artifacts
 *.db
+
+# gradle.properties (contains release signing passwords)
+/gradle.properties
 *.logcat
 *.log
 test_compile.kt

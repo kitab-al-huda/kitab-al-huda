@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.alfred.kitabalhuda"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 3
         versionName = "1.0.1"
 
@@ -44,9 +44,19 @@ android {
         buildConfigField("String", "API_AUTH_SIGNATURE", "\"${env["API_AUTH_SIGNATURE"]}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(project.findProperty("RELEASE_STORE_FILE") as String? ?: "release.jks")
+            storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as String? ?: ""
+            keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as String? ?: ""
+            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as String? ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
