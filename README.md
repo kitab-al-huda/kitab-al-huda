@@ -66,10 +66,10 @@ To build and run the application, you must configure the Facebook Messenger API 
 ### Step-by-Step Setup
 
 1. **Clone the repository** and navigate to the project root:
-   ```bash
-   git clone <repository-url>
-   cd kitab-al-huda
-   ```
+    ```bash
+    git clone https://github.com/kitab-al-huda/kitab-al-huda.git
+    cd kitab-al-huda
+    ```
 
 2. **Create your `.env` file** from the template:
    ```bash
@@ -148,6 +148,18 @@ Kitab al-Huda/
 │       ├── util/                       # Utility helpers (ReciterPreferences)
 │       └── utils/                      # Cryptography & resource managers (CryptoUtils)
 ```
+
+---
+
+## 🌍 Project Ecosystem
+
+This project is part of the **Kitab al-Huda** ecosystem:
+
+| Repo | Description | Link |
+|------|-------------|------|
+| 📱 **kitab-al-huda** | Android app (this repo) | [GitHub](https://github.com/kitab-al-huda/kitab-al-huda) |
+| 🌐 **kitab-al-huda.github.io** | Site vitrine + Privacy Policy | [GitHub](https://github.com/kitab-al-huda/kitab-al-huda.github.io) — [Site](https://kitab-al-huda.github.io) |
+| 🔧 **kitab-al-huda-tools** | Scripts Python d'upload Messenger | [GitHub](https://github.com/kitab-al-huda/kitab-al-huda-tools) |
 
 ---
 

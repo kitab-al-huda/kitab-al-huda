@@ -77,47 +77,41 @@ Kitab al-Huda/
 │       │   │               │   └── SourateRepository.kt
 │       │   │               ├── service/
 │       │   │               │   └── AudioPlayerService.kt
-│       │   │               ├── ui/
-│       │   │               │   ├── discover/
-│       │   │               │   │   └── DiscoverFragment.kt
-│       │   │               │   ├── home/
-│       │   │               │   │   ├── HomeViewModel.kt
-│       │   │               │   │   └── ReciteurAdapter.kt
-│       │   │               │   ├── library/
-│       │   │               │   │   ├── AddToPlaylistBottomSheet.kt
-│       │   │               │   │   ├── CreatePlaylistBottomSheet.kt
-│       │   │               │   │   ├── EditPlaylistDialog.kt
-│       │   │               │   │   ├── HistoryAdapter.kt
-│       │   │               │   │   ├── HistoryFragment.kt
-│       │   │               │   │   ├── HistoryViewModel.kt
-│       │   │               │   │   ├── LibraryFragment.kt
-│       │   │               │   │   ├── LibraryViewModel.kt
-│       │   │               │   │   ├── PlaylistAdapter.kt
-│       │   │               │   │   ├── PlaylistDetailAdapter.kt
-│       │   │               │   │   ├── PlaylistDetailFragment.kt
-│       │   │               │   │   ├── PlaylistDetailViewModel.kt
-│       │   │               │   │   ├── PlaylistListFragment.kt
-│       │   │               │   │   ├── PlaylistMiniAdapter.kt
-│       │   │               │   │   └── PlaylistTouchHelperCallback.kt
-│       │   │               │   ├── player/
-│       │   │               │   │   ├── FullPlayerFragment.kt
-│       │   │               │   │   ├── MiniPlayerFragment.kt
-│       │   │               │   │   ├── PlaybackMode.kt
-│       │   │               │   │   ├── PlayerViewModel.kt
-│       │   │               │   │   └── SleepTimerBottomSheet.kt
-│       │   │               │   ├── profile/
-│       │   │               │   │   ├── ProfileFragment.kt
-│       │   │               │   │   └── ProfileViewModel.kt
-│       │   │               │   ├── quran/
-│       │   │               │   │   ├── QuranFragment.kt
-│       │   │               │   │   ├── ReciterSelectionBottomSheet.kt
-│       │   │               │   │   ├── SourateAdapter.kt
-│       │   │               │   │   └── SourateViewModel.kt
-│       │   │               │   ├── search/
-│       │   │               │   │   ├── SearchFragment.kt
-│       │   │               │   │   └── SearchViewModel.kt
-│       │   │               │   └── settings/
-│       │   │               │       └── SettingsActivity.kt
+│   │   │               ├── ui/
+│   │   │               │   ├── discover/
+│   │   │               │   │   └── DiscoverFragment.kt
+│   │   │               │   ├── home/
+│   │   │               │   │   ├── HomeViewModel.kt
+│   │   │               │   │   └── ReciteurAdapter.kt
+│   │   │               │   ├── library/
+│   │   │               │   │   ├── AddToPlaylistBottomSheet.kt
+│   │   │               │   │   ├── CreatePlaylistBottomSheet.kt
+│   │   │               │   │   ├── EditPlaylistDialog.kt
+│   │   │               │   │   ├── HistoryAdapter.kt
+│   │   │               │   │   ├── HistoryFragment.kt
+│   │   │               │   │   ├── HistoryViewModel.kt
+│   │   │               │   │   ├── LibraryFragment.kt
+│   │   │               │   │   ├── LibraryViewModel.kt
+│   │   │               │   │   ├── PlaylistAdapter.kt
+│   │   │               │   │   ├── PlaylistDetailAdapter.kt
+│   │   │               │   │   ├── PlaylistDetailFragment.kt
+│   │   │               │   │   ├── PlaylistDetailViewModel.kt
+│   │   │               │   │   ├── PlaylistListFragment.kt
+│   │   │               │   │   ├── PlaylistMiniAdapter.kt
+│   │   │               │   │   └── PlaylistTouchHelperCallback.kt
+│   │   │               │   ├── player/
+│   │   │               │   │   ├── FullPlayerFragment.kt
+│   │   │               │   │   ├── MiniPlayerFragment.kt
+│   │   │               │   │   ├── PlaybackMode.kt
+│   │   │               │   │   ├── PlayerViewModel.kt
+│   │   │               │   │   └── SleepTimerBottomSheet.kt
+│   │   │               │   ├── quran/
+│   │   │               │   │   ├── QuranFragment.kt
+│   │   │               │   │   ├── ReciterSelectionBottomSheet.kt
+│   │   │               │   │   ├── SourateAdapter.kt
+│   │   │               │   │   └── SourateViewModel.kt
+│   │   │               │   └── settings/
+│   │   │               │       └── SettingsActivity.kt
 │   │   │               └── utils/
 │   │   │                   ├── CryptoUtils.kt
 │   │   │                   ├── CsvHelper.kt
@@ -184,17 +178,15 @@ Kitab al-Huda/
 │       │       │   ├── bottom_sheet_sleep_timer.xml
 │       │       │   ├── countdown_view.xml
 │       │       │   ├── dialog_edit_playlist.xml
-│       │       │   ├── fragment_discover.xml
-│       │       │   ├── fragment_full_player.xml
-│       │       │   ├── fragment_history.xml
-│       │       │   ├── fragment_library.xml
-│       │       │   ├── fragment_mini_player.xml
-│       │       │   ├── fragment_playlist_detail.xml
-│       │       │   ├── fragment_playlist_list.xml
-│       │       │   ├── fragment_profile.xml
-│       │       │   ├── fragment_quran.xml
-│       │       │   ├── fragment_search.xml
-│       │       │   ├── item_history.xml
+│   │   │               ├── fragment_discover.xml
+│   │   │               ├── fragment_full_player.xml
+│   │   │               ├── fragment_history.xml
+│   │   │               ├── fragment_library.xml
+│   │   │               ├── fragment_mini_player.xml
+│   │   │               ├── fragment_playlist_detail.xml
+│   │   │               ├── fragment_playlist_list.xml
+│   │   │               ├── fragment_quran.xml
+│   │   │               ├── item_history.xml
 │       │       │   ├── item_playlist.xml
 │       │       │   ├── item_playlist_mini.xml
 │       │       │   ├── item_playlist_track.xml
@@ -276,7 +268,7 @@ Kitab al-Huda/
   - **Quran**: Browsable list of all surahs with search and Mecca/Medina filters.
   - **Library**: Management of playlists and listening history.
   - **Player**: Media3 integrated player with mini-player and full-screen controls, includes sleep timer.
-  - **Settings**: Global configuration (Language, Reciter preference).
+  - **Settings**: Global configuration (Language, Reciter preference, Privacy Policy).
 - **Tech Stack**:
   - **Room Database**: Complex relationships between reciters, surahs, and playlists.
   - **Navigation Component**: Fragments-based navigation with a single activity architecture.

@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- None.
+### Removed
+- **Old Profile & Search screens**: Deleted `ProfileFragment`, `ProfileViewModel`, `SearchFragment`, and `SearchViewModel` — unused fragments not in navigation graph.
+
+### Changed
+- **Build config**: Updated `.gitignore`, `app/build.gradle.kts` (Kotlin 2.0, Java 17, dependency bumps).
+- **Release checklist**: Moved Play Store preparation tasks to `RELEASE_CHECKLIST.md`.
 
 ---
 
