@@ -78,3 +78,9 @@ At runtime, `CryptoUtils.decrypt()` combines `BuildConfig.INTERNAL_BUILD_ID` and
 - **Local Persistence (Room)**: Entities represent `SourateEntity`, `AudioEntity` (tracks mapping to surahs/parts), `ReciteurEntity`, `HadithEntity`, `PlaylistEntity`, `PlaylistItemEntity` (joins tracks to playlists with order), and `ListeningHistoryEntity`.
 - **Data Repositories**: Located in `app/src/main/java/com/alfred/kitabalhuda/repository/` (`MessengerRepository`, `SourateRepository`, `ReciteurRepository`, `AudioRepository`, `PlaylistRepository`, etc.).
 - **UI Architecture**: MVVM with XML Data Binding and LiveData. Views are divided by feature folders (`ui/home/`, `ui/discover/`, `ui/quran/`, `ui/player/`, `ui/library/`, `ui/search/`, `ui/settings/`, `ui/profile/`).
+
+---
+
+## Workspace context
+
+This project is part of a 3-project monorepo. See `AGENTS.md` at the workspace root for the full picture.
