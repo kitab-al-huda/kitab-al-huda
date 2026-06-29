@@ -3,13 +3,23 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+*(No pending changes)*
 
-### Removed
-- **Old Profile & Search screens**: Deleted `ProfileFragment`, `ProfileViewModel`, `SearchFragment`, and `SearchViewModel` — unused fragments not in navigation graph.
+---
+
+## [1.0.1] — 2026-06-29
+
+### Added
+- **Remote Dialogs**: Server-driven bottom-sheet dialogs for announcements and promotions, fetched from GitHub Pages (`data/dialogs.json`). Supports version/date targeting and show-once tracking.
+- **Privacy Policy Link**: New "سياسة الخصوصية" row in Settings → `https://kitab-al-huda.github.io/privacy.html`.
 
 ### Changed
-- **Build config**: Updated `.gitignore`, `app/build.gradle.kts` (Kotlin 2.0, Java 17, dependency bumps).
-- **Release checklist**: Moved Play Store preparation tasks to `RELEASE_CHECKLIST.md`.
+- **Build config**: Kotlin 2.0, Java 17, dependency bumps.
+- **UI**: Release-ready APK (7.4 MB) and AAB (11 MB), full Arabic interface, RTL support.
+
+### Fixed
+- **Duration units**: Normalized mixed seconds/milliseconds in progress bar.
+- **String format**: Added `formatted="false"` to `added_to_playlist_parts` to suppress lint warning.
 
 ---
 

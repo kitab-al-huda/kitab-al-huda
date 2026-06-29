@@ -1,5 +1,7 @@
 # 🌟 Kitab al-Huda (كتاب الهدى)
 
+[![Download](https://img.shields.io/github/v/release/kitab-al-huda/kitab-al-huda?label=Download&color=C5A059)](https://github.com/kitab-al-huda/kitab-al-huda/releases/latest)
+
 **Kitab al-Huda** is a premium, modern Islamic Android application designed to provide seamless access to Quran recitations, daily Hadiths, and personal spiritual management. Built using cutting-edge Android development practices, it features a beautiful Material 3 design, a robust local persistence layer, and a highly innovative data-saving streaming architecture.
 
 ---

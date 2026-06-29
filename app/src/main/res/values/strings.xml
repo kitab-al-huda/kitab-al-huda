@@ -53,7 +53,7 @@
     <string name="delete_playlist_confirmation">هل أنت متأكد أنك تريد حذف هذه القائمة؟</string>
     <string name="delete">حذف</string>
     <string name="added_to_playlist">تمت الإضافة إلى %s</string>
-    <string name="added_to_playlist_parts">تمت الإضافة إلى %s (%s أجزاء)</string>
+    <string name="added_to_playlist_parts" formatted="false">تمت الإضافة إلى %s (%s أجزاء)</string>
     <string name="sleep_timer">مؤقت النوم</string>
     <string name="sleep_timer_set">تم ضبط مؤقت النوم لـ %s دقيقة</string>
     <string name="sleep_timer_off">تم إيقاف مؤقت النوم</string>
