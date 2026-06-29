@@ -143,6 +143,9 @@
     <string name="about_credits_title">الشكر والتقدير</string>
     <string name="about_credits_body">نشكر جميع القراء والمشايخ الذين ساهموا في إثراء المحتوى، وكذلك فريق التطوير على الجهود المبذولة لإخراج هذا التطبيق بأفضل صورة. جزاهم الله خيراً.</string>
 
+    <!-- Settings -->
+    <string name="privacy_policy">سياسة الخصوصية</string>
+
     <!-- Internal App Configurations -->
     <string name="app_build_signature">K1tab@Huda#2026</string>
 </resources>

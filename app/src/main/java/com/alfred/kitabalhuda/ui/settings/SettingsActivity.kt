@@ -1,6 +1,7 @@
 package com.alfred.kitabalhuda.ui.settings
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ class SettingsActivity : AppCompatActivity() {
         setupNumberStyleRow()
         setupAboutRow()
         setupPlaybackSpeedRow()
+        setupPrivacyPolicyRow()
         updateSummaries()
     }
 
@@ -68,6 +70,13 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupAboutRow() {
         findViewById<android.view.View>(R.id.row_about).setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
+        }
+    }
+
+    private fun setupPrivacyPolicyRow() {
+        findViewById<android.view.View>(R.id.row_privacy_policy).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://kitab-al-huda.github.io/privacy.html"))
+            startActivity(intent)
         }
     }
 

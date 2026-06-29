@@ -2,7 +2,9 @@ package com.alfred.kitabalhuda
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import kotlinx.coroutines.launch
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -66,5 +68,10 @@ class MainActivity : AppCompatActivity() {
         
         // Initialiser WorkManager
         WorkManager.getInstance(applicationContext)
+
+        // Afficher les dialogs distants si nécessaire
+        lifecycleScope.launch {
+            com.alfred.kitabalhuda.utils.DialogManager.showIfNeeded(this@MainActivity)
+        }
     }
 }
