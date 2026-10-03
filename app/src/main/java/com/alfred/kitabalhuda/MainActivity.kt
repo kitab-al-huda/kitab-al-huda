@@ -1,6 +1,9 @@
 package com.alfred.kitabalhuda
 
 import android.os.Bundle
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -21,6 +24,13 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Gestion des WindowInsets pour éviter le chevauchement avec la barre d'état
+        ViewCompat.setOnApplyWindowInsetsListener(binding.container) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = insets.top)
+            windowInsets
+        }
 
         val navView: BottomNavigationView = binding.navView
 

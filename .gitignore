@@ -38,3 +38,8 @@ test_compile.kt
 
 # Legacy / Miscellaneous
 gemini.md
+
+# Release artifacts
+kitab-al-huda-*.aab
+kitab-al-huda-*.apk
+mapping-*.txt
