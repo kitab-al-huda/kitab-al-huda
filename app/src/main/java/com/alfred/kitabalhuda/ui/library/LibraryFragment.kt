@@ -4,57 +4,105 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.alfred.kitabalhuda.databinding.FragmentLibraryBinding
-import com.google.android.material.tabs.TabLayoutMediator
+import androidx.lifecycle.ViewModelProvider
+import com.alfred.kitabalhuda.R
+import com.alfred.kitabalhuda.ui.player.PlayerUiState
+import com.alfred.kitabalhuda.ui.player.PlayerViewModel
+import com.alfred.kitabalhuda.ui.theme.KitabAlHudaTheme
 
 class LibraryFragment : Fragment() {
 
-    private var _binding: FragmentLibraryBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var libraryViewModel: LibraryViewModel
+    private lateinit var historyViewModel: HistoryViewModel
+    private lateinit var playerViewModel: PlayerViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLibraryBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+        libraryViewModel = ViewModelProvider(requireActivity())[LibraryViewModel::class.java]
+        historyViewModel = ViewModelProvider(this)[HistoryViewModel::class.java]
+        playerViewModel = ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        
-        // Setup ViewPager and Tabs
-        val adapter = LibraryPagerAdapter(this)
-        binding.viewPager.adapter = adapter
+        setupFragmentResultListeners()
 
-        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = when (position) {
-                0 -> getString(com.alfred.kitabalhuda.R.string.tab_playlists)
-                1 -> getString(com.alfred.kitabalhuda.R.string.tab_history)
-                2 -> getString(com.alfred.kitabalhuda.R.string.tab_downloads)
-                else -> ""
-            }
-        }.attach()
-    }
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                KitabAlHudaTheme {
+                    val playlistsWithCount by libraryViewModel.allPlaylistsWithCount.observeAsState(emptyList())
+                    val historyItems by historyViewModel.recentHistory.observeAsState(emptyList())
+                    val playerUiState by playerViewModel.playerUiState.observeAsState(PlayerUiState.Idle)
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+                    val bottomPadding = if (playerUiState !is PlayerUiState.Idle) 64 else 0
 
-    inner class LibraryPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-        override fun getItemCount(): Int = 3  // 3 tabs now
-
-        override fun createFragment(position: Int): Fragment {
-            return when (position) {
-                0 -> PlaylistListFragment.newInstance()
-                1 -> HistoryFragment.newInstance()
-                2 -> DownloadsFragment.newInstance()
-                else -> Fragment()
+                    LibraryScreen(
+                        playlistsWithCount = playlistsWithCount,
+                        historyItems = historyItems,
+                        onPlaylistClick = { playlist ->
+                            val fragment = PlaylistDetailFragment.newInstance(playlist.id, playlist.name)
+                            requireActivity().supportFragmentManager.beginTransaction()
+                                .replace(R.id.nav_host_fragment_activity_main, fragment)
+                                .addToBackStack(null)
+                                .commit()
+                        },
+                        onEditPlaylistClick = { playlist ->
+                            val dialog = EditPlaylistDialog.newInstance(playlist.id, playlist.name, playlist.description)
+                            dialog.show(parentFragmentManager, EditPlaylistDialog.TAG)
+                        },
+                        onDeletePlaylistClick = { playlist ->
+                            AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.delete)
+                                .setMessage(R.string.delete_playlist_confirmation)
+                                .setPositiveButton(R.string.delete) { _, _ ->
+                                    libraryViewModel.deletePlaylist(playlist)
+                                }
+                                .setNegativeButton(R.string.cancel, null)
+                                .show()
+                        },
+                        onCreatePlaylistClick = {
+                            val bottomSheet = CreatePlaylistBottomSheet.newInstance()
+                            bottomSheet.show(parentFragmentManager, CreatePlaylistBottomSheet.TAG)
+                        },
+                        onHistoryItemClick = { historyItem ->
+                            playerViewModel.playSurahWithReciter(
+                                historyItem.sourate.numero,
+                                historyItem.reciteur.id,
+                                historyItem.reciteur.nom
+                            )
+                            Toast.makeText(
+                                context,
+                                getString(R.string.playing_surah, historyItem.sourate.nomArabe),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        bottomPadding = bottomPadding
+                    )
+                }
             }
         }
     }
-}
+
+    private fun setupFragmentResultListeners() {
+        parentFragmentManager.setFragmentResultListener(
+            EditPlaylistDialog.REQUEST_KEY,
+            this
+        ) { _, bundle ->
+            val id = bundle.getInt(EditPlaylistDialog.RESULT_ID)
+            val newName = bundle.getString(EditPlaylistDialog.RESULT_NAME) ?: return@setFragmentResultListener
+            val newDescription = bundle.getString(EditPlaylistDialog.RESULT_DESCRIPTION)
+
+            libraryViewModel.allPlaylists.value?.find { it.id == id }?.let { original ->
+                libraryViewModel.updatePlaylist(original.copy(name = newName, description = newDescription))
+            }
+        }
+    }
+}

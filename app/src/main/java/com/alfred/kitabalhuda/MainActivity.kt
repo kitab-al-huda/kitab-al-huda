@@ -1,6 +1,7 @@
 package com.alfred.kitabalhuda
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -20,15 +21,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Gestion des WindowInsets pour éviter le chevauchement avec la barre d'état
-        ViewCompat.setOnApplyWindowInsetsListener(binding.container) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.updatePadding(top = insets.top)
+        // Gestion des WindowInsets pour Android 15 Edge-to-Edge
+        ViewCompat.setOnApplyWindowInsetsListener(binding.container) { _, windowInsets ->
+            val statusInsets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            binding.appBarLayout.updatePadding(top = statusInsets.top)
+            binding.navView.updatePadding(bottom = navInsets.bottom)
             windowInsets
         }
 
