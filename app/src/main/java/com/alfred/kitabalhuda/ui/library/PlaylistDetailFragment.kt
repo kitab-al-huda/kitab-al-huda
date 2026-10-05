@@ -5,23 +5,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.alfred.kitabalhuda.R
-import com.alfred.kitabalhuda.databinding.FragmentPlaylistDetailBinding
-import com.alfred.kitabalhuda.utils.toArabicIndic
-import com.google.android.material.appbar.AppBarLayout
+import com.alfred.kitabalhuda.database.dao.PlaylistDao.PlaylistTrack
+import com.alfred.kitabalhuda.ui.player.PlayerUiState
+import com.alfred.kitabalhuda.ui.player.PlayerViewModel
+import com.alfred.kitabalhuda.ui.theme.KitabAlHudaTheme
 
 class PlaylistDetailFragment : Fragment() {
 
-    private var _binding: FragmentPlaylistDetailBinding? = null
-    private val binding get() = _binding!!
-
     private lateinit var viewModel: PlaylistDetailViewModel
-    private lateinit var adapter: PlaylistDetailAdapter
+    private lateinit var playerViewModel: PlayerViewModel
 
     private var playlistId: Int = -1
     private var playlistName: String = ""
@@ -37,127 +36,75 @@ class PlaylistDetailFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPlaylistDetailBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this)[PlaylistDetailViewModel::class.java]
+        playerViewModel = ViewModelProvider(requireActivity())[PlayerViewModel::class.java]
 
-        setupUI()
-        setupRecyclerView()
-        observeViewModel()
-    }
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                KitabAlHudaTheme {
+                    val tracks by viewModel.getPlaylistTracks(playlistId).observeAsState(emptyList())
+                    val playerUiState by playerViewModel.playerUiState.observeAsState(PlayerUiState.Idle)
 
-    override fun onResume() {
-        super.onResume()
-        adapter.notifyDataSetChanged()
-    }
+                    val currentMediaId = when (val s = playerUiState) {
+                        is PlayerUiState.Playing -> s.mediaId
+                        is PlayerUiState.Paused -> s.mediaId
+                        else -> null
+                    }
+                    val isAudioPlaying = playerUiState is PlayerUiState.Playing
+                    val bottomPadding = if (playerUiState !is PlayerUiState.Idle) 64 else 0
 
-    private fun setupUI() {
-        // Set playlist title inside our big header card
-        binding.textHeaderTitle.text = playlistName
-
-        // Standard navigation
-        binding.toolbar.setNavigationOnClickListener {
-             parentFragmentManager.popBackStack()
-        }
-
-        // --- Premium Feature: Dynamic Toolbar Title (Spotify Style) ---
-        // Title in toolbar only shows up when header is fully collapsed
-        binding.appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            val isCollapsed = Math.abs(verticalOffset) >= appBarLayout.totalScrollRange
-            if (isCollapsed) {
-                binding.toolbar.title = playlistName
-            } else {
-                binding.toolbar.title = ""
-            }
-        })
-
-        // --- Premium Feature: Animate Floating Play Button on list scroll ---
-        // Hides FAB when scrolling down, shows FAB when scrolling up
-        binding.recyclerTracks.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0 && binding.btnPlayAll.isShown) {
-                    binding.btnPlayAll.hide()
-                } else if (dy < 0 && !binding.btnPlayAll.isShown) {
-                    binding.btnPlayAll.show()
-                }
-            }
-        })
-
-        // Play All button - plays entire playlist from beginning
-        binding.btnPlayAll.setOnClickListener {
-            val tracks = adapter.getCurrentTracks()
-            if (tracks.isNotEmpty()) {
-                val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
-                playerViewModel.playPlaylist(tracks, 0)
-                Toast.makeText(context, getString(R.string.playing_playlist, playlistName), Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun setupRecyclerView() {
-        val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
-
-        adapter = PlaylistDetailAdapter(
-            onTrackClick = { track ->
-                // Play from this track onwards
-                val allTracks = adapter.getCurrentTracks()
-                val startIndex = allTracks.indexOf(track)
-                if (startIndex >= 0) {
-                    playerViewModel.playPlaylist(allTracks, startIndex)
-                    Toast.makeText(context, getString(R.string.playing_from, track.sourate.nomArabe), Toast.LENGTH_SHORT).show()
-                }
-            },
-            onDeleteClick = { track ->
-                viewModel.removeTrack(track.item)
-            },
-            onOrderChanged = { items ->
-                viewModel.updateOrder(items)
-            }
-        )
-        binding.recyclerTracks.layoutManager = LinearLayoutManager(context)
-        binding.recyclerTracks.adapter = adapter
-
-        val callback = PlaylistTouchHelperCallback(adapter)
-        val touchHelper = ItemTouchHelper(callback)
-        touchHelper.attachToRecyclerView(binding.recyclerTracks)
-    }
-
-    private fun observeViewModel() {
-        if (playlistId != -1) {
-            viewModel.getPlaylistTracks(playlistId).observe(viewLifecycleOwner) { tracks ->
-                adapter.submitList(tracks)
-                binding.textEmptyTracks.visibility = if (tracks.isEmpty()) View.VISIBLE else View.GONE
-
-                // Set total counts in our header dynamically
-                binding.textHeaderTracksCount.text = "${tracks.size.toArabicIndic()} ${getString(R.string.tracks_count)}"
-            }
-        }
-
-        // Observe player state to update currently playing indicator
-        val playerViewModel = ViewModelProvider(requireActivity())[com.alfred.kitabalhuda.ui.player.PlayerViewModel::class.java]
-        playerViewModel.playerUiState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is com.alfred.kitabalhuda.ui.player.PlayerUiState.Playing -> {
-                    adapter.setCurrentlyPlaying(state.mediaId, true)
-                }
-                is com.alfred.kitabalhuda.ui.player.PlayerUiState.Paused -> {
-                    adapter.setCurrentlyPlaying(state.mediaId, false)
-                }
-                else -> {
-                    adapter.setCurrentlyPlaying(null)
+                    PlaylistDetailScreen(
+                        playlistName = playlistName,
+                        tracks = tracks,
+                        currentPlayingMediaId = currentMediaId,
+                        isAudioPlaying = isAudioPlaying,
+                        onBackClick = { parentFragmentManager.popBackStack() },
+                        onPlayAllClick = {
+                            if (tracks.isNotEmpty()) {
+                                playerViewModel.playPlaylist(tracks, 0)
+                                Toast.makeText(
+                                    context,
+                                    getString(R.string.playing_playlist, playlistName),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        onTrackClick = { track ->
+                            val startIndex = tracks.indexOf(track)
+                            if (startIndex >= 0) {
+                                playerViewModel.playPlaylist(tracks, startIndex)
+                                Toast.makeText(
+                                    context,
+                                    getString(R.string.playing_from, track.sourate.nomArabe),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        onDeleteTrackClick = { track ->
+                            viewModel.removeTrack(track.item)
+                        },
+                        onMoveTrackUpClick = { index ->
+                            if (index > 0) {
+                                val currentList = tracks.toMutableList()
+                                val moved = currentList.removeAt(index)
+                                currentList.add(index - 1, moved)
+                                viewModel.updateOrder(currentList)
+                            }
+                        },
+                        onMoveTrackDownClick = { index ->
+                            if (index < tracks.size - 1) {
+                                val currentList = tracks.toMutableList()
+                                val moved = currentList.removeAt(index)
+                                currentList.add(index + 1, moved)
+                                viewModel.updateOrder(currentList)
+                            }
+                        },
+                        bottomPadding = bottomPadding
+                    )
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

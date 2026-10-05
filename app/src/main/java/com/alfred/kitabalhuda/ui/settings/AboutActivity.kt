@@ -1,15 +1,23 @@
 package com.alfred.kitabalhuda.ui.settings
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.alfred.kitabalhuda.R
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.alfred.kitabalhuda.ui.theme.KitabAlHudaTheme
 
-class AboutActivity : AppCompatActivity() {
+class AboutActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_about)
-        findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
-            .setNavigationOnClickListener { finish() }
+        setContent {
+            KitabAlHudaTheme {
+                AboutScreen(
+                    onBackClick = { finish() }
+                )
+            }
+        }
     }
 }
+
